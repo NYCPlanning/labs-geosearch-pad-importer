@@ -30,12 +30,17 @@ You will need the following things properly installed on your computer.
 
 - [Git](https://git-scm.com/)
 - [Node.js](https://nodejs.org/) (with NPM)
-- {Replace this list with the app's dependencies.}
+- An elasticsearch database at `localhost:9200` with the pelias index already created
+- Pelias API running at `localhost:4000`
+- Pelias PIP service with NYC whosonfirst running at `localhost:4200`. PIP is used to lookup admin boundaries for each record before it enters the database.
 
 ## Local development
 
 - Clone this repo `git clone git@github.com:NYCPlanning/labs-geocoder-api.git`
-- {Replace this with how-to instructions for running locally.}
+- Install Dependencies `npm install`
+
+To download PAD data, use `PELIAS_CONFIG=./config/pelias.json npm run download`
+To run the importer, use `PELIAS_CONFIG=./config/pelias.json npm start`
 
 ## Architecture
 
