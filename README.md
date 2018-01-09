@@ -1,4 +1,4 @@
-# Authoritative NYC Address Data for Pelias Geocoder
+# Authoritative NYC Address Data for the Pelias Geocoder
 
 This package imports authoritative NYC address data from the [Property Address Directory (PAD)](https://www1.nyc.gov/site/planning/data-maps/open-data.page#pad) into [Pelias](https://github.com/pelias/pelias) (A modular, open-source geocoder built on top of ElasticSearch for fast geocoding).
 
