@@ -1,0 +1,26 @@
+{
+  "esclient": {
+    "hosts": [{
+      "host": "localhost"
+    }]
+  },
+  "imports": {
+    "nycpad": {
+      "download": [
+        {
+          "sourceURL": "https://www1.nyc.gov/assets/planning/download/zip/data-maps/open-data/pad17d.zip"
+        }
+      ],
+      "leveldbpath": "/tmp",
+      "datapath": "./data/nycpad",
+      "import": [{
+          "filename":"bobaddr.txt"
+      }]
+    },
+    "services": {
+      "pip": {
+        "url": "http://localhost:4200"
+      }
+    }
+  }
+}

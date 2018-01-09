@@ -1,0 +1,67 @@
+{
+  "name": "pelias-nycpad",
+  "version": "0.0.0-semantic-release",
+  "author": "nycplanninglabs",
+  "description": "Pelias nycpad utilities",
+  "main": "index.js",
+  "scripts": {
+    "download": "node util/download_data.js",
+    "coverage": "node_modules/.bin/istanbul cover test/run.js",
+    "end-to-end": "export NODE_ENV=test && npm run pretest && node test/end-to-end.js;",
+    "lint": "jshint .",
+    "pretest": "test/pretest.sh",
+    "start": "node --max_old_space_size=4096 index.js",
+    "test": "NODE_ENV=test npm run units",
+    "travis": "npm run check-dependencies && node ./test/travis-config.js && npm test && npm run end-to-end",
+    "units": "node test/run.js | tap-spec",
+    "validate": "npm ls",
+    "semantic-release": "semantic-release pre && npm publish && semantic-release post",
+    "check-dependencies": "node_modules/.bin/npm-check --production"
+  },
+  "keywords": [
+    "pelias",
+    "stream",
+    "nycpad",
+    "elasticsearch"
+  ],
+  "engines": {
+    "node": ">=4.0.0",
+    "npm": ">=1.4.3",
+    "elasticsearch": ">=1.3.4"
+  },
+  "dependencies": {
+    "async": "^2.6.0",
+    "combined-stream": "^1.0.5",
+    "fast-csv": "^2.4.1",
+    "fs-extra": "^5.0.0",
+    "lodash": "^4.17.4",
+    "pelias-config": "^2.13.0",
+    "pelias-logger": "^0.3.0",
+    "pelias-model": "^5.3.1",
+    "pelias-wof-admin-lookup": "^4.5.0",
+    "through2": "^2.0.3"
+  },
+  "devDependencies": {
+    "colors": "^1.1.2",
+    "deep-diff": "^0.3.2",
+    "event-stream": "^3.3.2",
+    "istanbul": "^0.4.3",
+    "jshint": "^2.8.0",
+    "naivedb": "^1.0.7",
+    "npm-check": "git://github.com/orangejulius/npm-check.git#disable-update-check",
+    "pelias-mock-logger": "^1.0.1",
+    "precommit-hook": "^3.0.0",
+    "proxyquire": "^1.7.10",
+    "semantic-release": "^8.0.1",
+    "taginfo": "^1.0.1",
+    "tap-spec": "^4.0.2",
+    "tape": "^4.0.0",
+    "tmp": "0.0.33"
+  },
+  "pre-commit": [
+    "lint",
+    "validate",
+    "test",
+    "check-dependencies"
+  ]
+}
