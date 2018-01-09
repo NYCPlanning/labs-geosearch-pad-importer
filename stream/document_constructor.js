@@ -34,11 +34,11 @@ module.exports = function(){
       // }
 
         doc.name = {
-          default: `${item.lhnd} ${item.stname}`
+          default: `${item.lhnd} ${item.stname}`.trim()
         }
 
         doc.phrase = {
-          default: `${item.lhnd} ${item.stname}`
+          default: `${item.lhnd} ${item.stname}`.trim()
         }
 
         doc.address_parts = {
