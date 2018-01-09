@@ -1,0 +1,56 @@
+<!doctype html>
+
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Leaflet Static Map Example</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.0.3/leaflet.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet-geocoder-mapzen/1.9.4/leaflet-geocoder-mapzen.css">
+
+  <style>
+    html, body {
+      height: 100%;
+      width: 100%;
+      margin: 0;
+      font-family: sans-serif;
+    }
+
+    #map {
+      height: 100%;
+      width: 100%;
+      margin: 0 auto;
+      z-index: 1;
+    }
+
+  </style>
+</head>
+
+<body>
+  <div id="map"></div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.0.3/leaflet.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-geocoder-mapzen/1.9.4/leaflet-geocoder-mapzen.js"></script>
+  <script type="text/javascript">
+    // instantiate map
+    const map = L.map('map', {
+      zoomControl: false,
+    })
+      .setView([40.7125, -74], 11);
+
+    // add carto light basemap tiles
+    L.tileLayer('//{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {
+      maxZoom: 18, attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>, &copy; <a href="https://carto.com/attribution">CARTO</a>'
+    }).addTo(map);
+
+    var options = {
+      url: 'http://localhost:4000/v1',
+      bounds: true,
+      position: 'topright',
+      expanded: true,
+      fullWidth: true,
+    };
+
+    L.control.geocoder('', options).addTo(map);
+
+  </script>
+</body>
+</html>

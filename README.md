@@ -42,6 +42,9 @@ You will need the following things properly installed on your computer.
 To download PAD data, use `PELIAS_CONFIG=./config/pelias.json npm run download`
 To run the importer, use `PELIAS_CONFIG=./config/pelias.json npm start`
 
+### Simple Leaflet GUI
+To load a simple leaflet map with an autocomplete search control, run `npm run map-test` and point your browser to `http://localhost:8000`.  This simple page expects the pelias API to be running at `http://localhost:4000`
+
 ## Architecture
 
 {"Lay of the land" structure of the codebase, components...}
