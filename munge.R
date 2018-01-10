@@ -35,13 +35,13 @@ pad <- read.csv('data/bobaadr.txt', stringsAsFactors=FALSE)
 
 pad$bbl <- paste(
   str_pad(
-    as.character(pad$boro), 5, pad="0"
+    as.character(pad$boro), 1, pad="0"
   ),
   str_pad(
-    as.character(pad$block), 3, pad="0"
+    as.character(pad$block), 5, pad="0"
   ),
   str_pad(
-    as.character(pad$lot), 3, pad="0"
+    as.character(pad$lot), 4, pad="0"
   ),
   sep=""
 )
@@ -68,17 +68,19 @@ pad$interpolatedCount <- ((pad$difference / 2) - 1)
 # - Assume addition of two 
 pad$finalCount <- pad$interpolatedCount + 2
 
-# - subet only those we need
-expandingAddresses <- pad[which(pad$finalCount > 1),]
+pad[is.na(pad$rnumber),]$rnumber <- 0
+pad[is.na(pad$lnumber),]$lnumber <- 0
 
-expandingAddresses$houseNums <-
+pad$houseNums <-
   apply(
-    expandingAddresses,
+    pad,
     1,
     function(x) {
       paste(seq(x['lnumber'], x['rnumber'], 2), collapse=',')
     })
 
-finalTable <- expandingAddresses %>% 
+pad <- pad %>% 
   transform(houseNums = strsplit(houseNums, ',')) %>%
   unnest(houseNums)
+
+write.csv(pad, 'data/final.csv')
