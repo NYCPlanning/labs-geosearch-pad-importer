@@ -28,8 +28,8 @@ module.exports = function(){
       // Set dummy latitude / longitude
       // if( item.hasOwnProperty('lat') && item.hasOwnProperty('lon') ){
         doc.setCentroid({
-          lat: 40.7128,
-          lon: -74.0060
+          lat: item.lat,
+          lon: item.lng,
         });
       // }
 
