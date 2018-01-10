@@ -6,4 +6,4 @@ source <- "https://www1.nyc.gov/assets/planning/download/zip/data-maps/open-data
 download(source, dest="data/dataset.zip", mode="wb") 
 unzip ("data/dataset.zip", exdir = "./data")
 
-pad <- read.csv('bobaadr.txt')
+pad <- read.csv('data/bobaadr.txt')
