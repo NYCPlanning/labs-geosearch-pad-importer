@@ -9,3 +9,6 @@ This script downloads a version of the PAD data from [NYC's Bytes of the Big App
 
 # R Script
 This script will output a file in the `/data` directory called `final.csv`. This is the expanded output. To make sure the script is getting the latest version of PAD, check that the [`source`](https://github.com/NYCPlanning/labs-pad-normalize/blob/master/munge.R#L8) is pointing to the most updated version of PAD. 
+
+# Status
+The script is incomplete! Find sample output [here](https://github.com/NYCPlanning/labs-pad-normalize/blob/master/pad-sample.csv). Over the coming weeks, it should be finalized. 
