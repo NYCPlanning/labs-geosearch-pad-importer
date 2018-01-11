@@ -1,6 +1,6 @@
 'use strict';
 
-const Joi = require('joi');
+var Joi = require('joi');
 
 // Schema Configuration
 // datapath: string (required)
@@ -10,9 +10,12 @@ const Joi = require('joi');
 // deduplicate: boolean (optional)
 module.exports = Joi.object().keys({
   imports: Joi.object().keys({
-    openstreetmap: Joi.object().keys({
-      datapath: Joi.string(),
+    nycpad: Joi.object().keys({
+      scriptFile: Joi.string(),
+      outputPath: Joi.string(),
       leveldbpath: Joi.string(),
+      datapath: Joi.string(),
+      scriptDir: Joi.string(),
       import: Joi.array().items(Joi.object().keys({
         filename: Joi.string()
       }).requiredKeys('filename').unknown(true)),
@@ -21,5 +24,5 @@ module.exports = Joi.object().keys({
       }).requiredKeys('sourceURL').unknown(true)),
       deduplicate: Joi.boolean()
     }).requiredKeys('datapath', 'leveldbpath', 'import').unknown(true)
-  }).requiredKeys('openstreetmap').unknown(true)
+  }).requiredKeys('nycpad').unknown(true)
 }).requiredKeys('imports').unknown(true);

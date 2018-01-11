@@ -1,14 +1,13 @@
 'use strict';
 
-const _ = require('lodash');
-const async = require('async');
-const child_process = require('child_process');
-const fs = require('fs-extra');
-const config = require( 'pelias-config' ).generate(require('../schema'));
-const logger = require('pelias-logger').get('download');
+var _ = require('lodash');
+var child_process = require('child_process');
+var fs = require('fs-extra');
+var config = require( 'pelias-config' ).generate(require('../schema'));
+var logger = require('pelias-logger').get('download');
 
 if (require.main === module) {
-  download((err) => {
+  download(function(err) {
     if (err) {
       logger.error('Failed to download data', err);
       process.exit(1);
@@ -17,40 +16,30 @@ if (require.main === module) {
   });
 }
 
-function download(callback) {
-  let sources;
+function download(callback) { // jshint ignore:line
+  var scriptFile = config.imports.nycpad.scriptFile;
+  var outputPath = config.imports.nycpad.outputPath;
+  var leveldbpath = config.imports.nycpad.leveldbpath; // jshint ignore:line
+  var datapath = config.imports.nycpad.datapath;
+  var scriptDir = config.imports.nycpad.scriptDir;
 
-  // if no download sources are specified, default to the planet file
-  if (_.isEmpty(config.imports.nycpad.download)) {
-    sources = [];
+  if (_.isEmpty(scriptFile)) {
+    logger.error('Error: Must configure scriptFile');
   }
-  else {
-    sources = _.map(config.imports.nycpad.download, (source) => source.sourceURL);
-  }
 
-  logger.info(`Downloading sources: ${sources}`);
+  logger.info('Running script for nycpad: ' + scriptFile);
 
-  fs.ensureDir(config.imports.nycpad.datapath, (err) => {
+  fs.ensureDir(datapath, function(err) {
     if (err) {
-      logger.error(`error making directory ${config.imports.nycpad.datapath}`, err);
+      logger.error('error making directory ', datapath, err);
       return callback(err);
     }
 
-    async.forEach(
-      sources,
-      (source, next) => {
-        downloadSource(config, source, next);
-      },
-      callback
-    );
+    var command = 'cd ' + scriptDir + ' && RScript ' + scriptFile + ' && cd .. && mv ' + outputPath + ' ' + datapath;
+
+    child_process
+      .exec(command, callback);
   });
-}
-
-function downloadSource(config, sourceUrl, callback) {
-  const targetDir = config.imports.nycpad.datapath;
-
-  logger.debug(`downloading ${sourceUrl} to ${targetDir}`);
-  child_process.exec(`cd ${targetDir} && { curl -L -X GET --silent --fail --remote-name ${sourceUrl}; } && unzip *`, callback);
 }
 
 module.exports = download;

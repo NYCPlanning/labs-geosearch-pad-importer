@@ -7,12 +7,12 @@
 var through = require('through2');
 var Document = require('pelias-model').Document;
 var peliasLogger = require( 'pelias-logger' ).get( 'openstreetmap' );
-var _ = require('lodash');
+var _ = require('lodash'); // jshint ignore:line
 
 module.exports = function(){
-  let i = 0;
+  var i = 0;
   var stream = through.obj( function( item, enc, next ) {
-    Object.keys(item).forEach((property) => {
+    Object.keys(item).forEach(function(property) {
       item[property] = item[property].trim();
     });
 
@@ -32,20 +32,21 @@ module.exports = function(){
           lon: -74.0060
         });
       // }
-
+        var defaultName = item.lhnd + ' ' + item.stname;
         doc.name = {
-          default: `${item.lhnd} ${item.stname}`.trim()
-        }
+          default: defaultName.trim()
+        };
 
+        var defaultPhrase = item.lhnd + ' ' + item.stname;
         doc.phrase = {
-          default: `${item.lhnd} ${item.stname}`.trim()
-        }
+          default: defaultPhrase.trim()
+        };
 
         doc.address_parts = {
           number: item.lhnd,
           street: item.stname,
           zip: item.zipcode
-        },
+        };
 
       // Set latitude / longitude (for ways where the centroid has been precomputed)
       // else if( item.hasOwnProperty('centroid') ){

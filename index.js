@@ -1,7 +1,7 @@
-const peliasConfig = require('pelias-config').generate(require('./schema'));
-const _ = require('lodash');
-const logger = require('pelias-logger').get('nycpad');
+var peliasConfig = require('pelias-config').generate(require('./schema')); // jshint ignore:line
+var _ = require('lodash'); // jshint ignore:line
+var logger = require('pelias-logger').get('nycpad'); // jshint ignore:line
 
-const importPipeline = require('./stream/importPipeline');
+var importPipeline = require('./stream/importPipeline');
 
 importPipeline.import();
