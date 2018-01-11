@@ -10,7 +10,7 @@ var peliasLogger = require( 'pelias-logger' ).get( 'openstreetmap' );
 var _ = require('lodash');
 
 module.exports = function(){
-  let i = 0;
+  var i = 0;
   var stream = through.obj( function( item, enc, next ) {
     Object.keys(item).forEach((property) => {
       item[property] = item[property].trim();
