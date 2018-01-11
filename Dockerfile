@@ -14,6 +14,3 @@ ADD . ${WORKDIR}
 
 # install npm dependencies
 RUN npm install
-
-# run tests
-RUN npm test
