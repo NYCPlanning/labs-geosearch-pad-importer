@@ -10,7 +10,7 @@ const Joi = require('joi');
 // deduplicate: boolean (optional)
 module.exports = Joi.object().keys({
   imports: Joi.object().keys({
-    openstreetmap: Joi.object().keys({
+    nycpad: Joi.object().keys({
       datapath: Joi.string(),
       leveldbpath: Joi.string(),
       import: Joi.array().items(Joi.object().keys({
@@ -21,5 +21,5 @@ module.exports = Joi.object().keys({
       }).requiredKeys('sourceURL').unknown(true)),
       deduplicate: Joi.boolean()
     }).requiredKeys('datapath', 'leveldbpath', 'import').unknown(true)
-  }).requiredKeys('openstreetmap').unknown(true)
+  }).requiredKeys('nycpad').unknown(true)
 }).requiredKeys('imports').unknown(true);

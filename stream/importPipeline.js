@@ -1,3 +1,4 @@
+'use strict'
 var logger = require('pelias-logger').get('nycpad');
 var csv = require("fast-csv");
 
@@ -13,11 +14,14 @@ streams.elasticsearch = require('pelias-dbclient');
 // default import pipeline
 streams.import = function(){
 
-  const pluto_lookup = {};
+  var pluto_lookup = {};
   csv
-   .fromPath("./data/mappluto_centroids.csv", { headers: true })
+   .fromPath("./lookup/mappluto_centroids.csv", { headers: true })
    .on("data", function(data){
-     const { bbl, lng, lat } = data;
+     var bbl = data.bbl;
+     var lng = data.lng;
+     var lat = data.lat;
+
      pluto_lookup[bbl] = [lng, lat];
    })
    .on("end", function(){
@@ -27,9 +31,7 @@ streams.import = function(){
        .pipe( streams.adminLookup() )
        .pipe( streams.dbMapper() )
        .pipe( streams.elasticsearch() );
-   });
-
-
+   });f
 };
 
 module.exports = streams;
