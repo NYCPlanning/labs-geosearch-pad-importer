@@ -22,9 +22,7 @@ function download(callback) {
 
   // if no download sources are specified, default to the planet file
   if (_.isEmpty(config.imports.nycpad.download)) {
-    sources = [
-      'http://planet.openstreetmap.org/pbf/planet-latest.osm.pbf'
-    ];
+    sources = [];
   }
   else {
     sources = _.map(config.imports.nycpad.download, (source) => source.sourceURL);
