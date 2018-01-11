@@ -6,7 +6,7 @@ FROM pelias/baseimage
 RUN apt-get update && apt-get install -y bzip2 && apt-get install -y unzip && rm -rf /var/lib/apt/lists/*
 
 # change working dir
-ENV WORKDIR /code/pelias/openstreetmap
+ENV WORKDIR /code/pelias/nycpad
 WORKDIR ${WORKDIR}
 
 # add local code
