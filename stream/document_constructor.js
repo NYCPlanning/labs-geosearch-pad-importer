@@ -6,7 +6,7 @@
 
 var through = require('through2');
 var Document = require('pelias-model').Document;
-var peliasLogger = require( 'pelias-logger' ).get( 'openstreetmap' );
+var peliasLogger = require( 'pelias-logger' ).get( 'nycpad' );
 var _ = require('lodash');
 
 module.exports = function(){

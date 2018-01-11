@@ -1,3 +1,4 @@
+'use strict'
 
 /**
   Looks up lat/lng coordinates for a bbl
@@ -10,11 +11,14 @@ var _ = require('lodash');
 module.exports = function(pluto_lookup){
   var stream = through.obj( function( item, enc, next ) {
     try {
-      const { boro, block, lot } = item;
-      const bbl = `${boro}${block}${lot}`;
+      var boro = item.boro;
+      var block = item.block;
+      var lot = item.lot;
+
+      var bbl = boro + block + lot;
       item.bbl = bbl;
 
-      const coords = pluto_lookup[bbl];
+      var coords = pluto_lookup[bbl];
       item.lng = coords[0];
       item.lat = coords[1];
 
