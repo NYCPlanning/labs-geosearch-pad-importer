@@ -1,4 +1,4 @@
-var logger = require('pelias-logger').get('nycpad');
+var logger = require('pelias-logger').get('nycpad'); // jshint ignore:line
 var streams = {};
 
 streams.csvParser = require('./csv_parser').create;

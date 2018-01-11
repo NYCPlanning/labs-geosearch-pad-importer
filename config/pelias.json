@@ -6,15 +6,13 @@
   },
   "imports": {
     "nycpad": {
-      "download": [
-        {
-          "sourceURL": "https://www1.nyc.gov/assets/planning/download/zip/data-maps/open-data/pad17d.zip"
-        }
-      ],
+      "scriptDir": "munge-data/",
+      "scriptFile": "munge.R",
+      "outputPath": "munge-data/data/final.csv",
       "leveldbpath": "/tmp",
       "datapath": "./data/nycpad",
       "import": [{
-          "filename":"bobaddr.txt"
+        "filename":"final.csv"
       }]
     },
     "services": {
