@@ -31,7 +31,7 @@ streams.import = function(){
        .pipe( streams.adminLookup() )
        .pipe( streams.dbMapper() )
        .pipe( streams.elasticsearch() );
-   });f
+   });
 };
 
 module.exports = streams;
