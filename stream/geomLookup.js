@@ -15,8 +15,8 @@ module.exports = function(pluto_lookup){
       var block = item.block;
       var lot = item.lot;
 
-      var bbl = boro + block + lot;
-      item.bbl = bbl;
+      var bbl = item.bbl;
+      console.log(bbl);
 
       var coords = pluto_lookup[bbl];
       item.lng = coords[0];
