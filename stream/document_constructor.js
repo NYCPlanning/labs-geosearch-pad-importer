@@ -6,7 +6,7 @@
 
 var through = require('through2');
 var Document = require('pelias-model').Document;
-var peliasLogger = require( 'pelias-logger' ).get( 'openstreetmap' );
+var peliasLogger = require( 'pelias-logger' ).get( 'nycpad' );
 var _ = require('lodash');
 
 module.exports = function(){
@@ -28,8 +28,8 @@ module.exports = function(){
       // Set dummy latitude / longitude
       // if( item.hasOwnProperty('lat') && item.hasOwnProperty('lon') ){
         doc.setCentroid({
-          lat: 40.7128,
-          lon: -74.0060
+          lat: item.lat,
+          lon: item.lng,
         });
       // }
 
