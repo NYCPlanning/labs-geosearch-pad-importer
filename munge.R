@@ -1,9 +1,3 @@
-install.packages('downloader')
-install.packages('gdata')
-install.packages('tidyr')
-install.packages('readr')
-install.packages('stringr')
-install.packages('dplyr')
 library(downloader)
 library(gdata)
 library(tidyr)
@@ -89,4 +83,7 @@ pad <- pad %>%
   transform(houseNums = strsplit(houseNums, ',')) %>%
   unnest(houseNums)
 
-write.csv(pad, 'data/final.csv')
+write.csv(pad, 'data/labs-geosearch-pad-normalized.csv')
+write.csv(final[sample(nrow(final), nrow(final) * 0.1), ], 'data/labs-geosearch-pad-normalized-sample-lg.csv')
+write.csv(final[sample(nrow(final), nrow(final) * 0.05), ], 'data/labs-geosearch-pad-normalized-sample-md.csv')
+write.csv(final[sample(nrow(final), nrow(final) * 0.01), ], 'data/labs-geosearch-pad-normalized-sample-sm.csv')
