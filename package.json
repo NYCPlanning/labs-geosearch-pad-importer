@@ -1,0 +1,19 @@
+{
+  "name": "pad-munge",
+  "version": "1.0.0",
+  "description": "R script and npm utilities for munging and publishing normalized NYC PAD data",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/NYCPlanning/labs-geosearch-pad-normalize.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/NYCPlanning/labs-geosearch-pad-normalize/issues"
+  },
+  "homepage": "https://github.com/NYCPlanning/labs-geosearch-pad-normalize#readme"
+}
