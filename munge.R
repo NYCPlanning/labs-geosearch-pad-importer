@@ -68,6 +68,6 @@ pad <- pad %>%
   unnest(houseNums)
 
 write.csv(pad, 'data/labs-geosearch-pad-normalized.csv')
-write.csv(final[sample(nrow(final), nrow(final) * 0.1), ], 'data/labs-geosearch-pad-normalized-sample-lg.csv')
-write.csv(final[sample(nrow(final), nrow(final) * 0.05), ], 'data/labs-geosearch-pad-normalized-sample-md.csv')
-write.csv(final[sample(nrow(final), nrow(final) * 0.01), ], 'data/labs-geosearch-pad-normalized-sample-sm.csv')
+write.csv(pad[sample(nrow(pad), nrow(pad) * 0.1), ], 'data/labs-geosearch-pad-normalized-sample-lg.csv')
+write.csv(pad[sample(nrow(pad), nrow(pad) * 0.05), ], 'data/labs-geosearch-pad-normalized-sample-md.csv')
+write.csv(pad[sample(nrow(pad), nrow(pad) * 0.01), ], 'data/labs-geosearch-pad-normalized-sample-sm.csv')
