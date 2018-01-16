@@ -4,7 +4,8 @@
   "description": "R script and npm utilities for munging and publishing normalized NYC PAD data",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "deploy": "./push-to-bucket.sh"
   },
   "repository": {
     "type": "git",

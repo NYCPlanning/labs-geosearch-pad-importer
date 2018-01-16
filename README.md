@@ -12,3 +12,6 @@ This script will output a file in the `/data` directory called `final.csv`. This
 
 # Status
 The script is incomplete! Find sample output [here](https://github.com/NYCPlanning/labs-pad-normalize/blob/master/pad-sample.csv). Over the coming weeks, it should be finalized. 
+
+# Deploy
+To "deploy" data as the source for the geosearch importer, run `npm run deploy`. You must have s3cmd configured as it will run that command to upload output files. To setup for Digital Ocean spaces, see: https://www.digitalocean.com/community/tutorials/how-to-configure-s3cmd-2-x-to-manage-digitalocean-spaces.
