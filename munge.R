@@ -4,70 +4,26 @@ library(tidyverse)
 source <- "https://www1.nyc.gov/assets/planning/download/zip/data-maps/open-data/pad17d.zip"
 
 download(source, dest="data/dataset.zip", mode="wb") 
-unzip ("data/dataset.zip", exdir = "./data")
+unzip("data/dataset.zip", exdir = "./data")
 
 # LOAD STEP
 pad <- read_csv('data/bobaadr.txt')
 
 # CLEANING STEP
-pad$bbl <- paste(
-  str_pad(
-    as.character(pad$boro), 1, pad="0"
-  ),
-  str_pad(
-    as.character(pad$block), 5, pad="0"
-  ),
-  str_pad(
-    as.character(pad$lot), 4, pad="0"
-  ),
-  sep=""
-)
+pad <- pad %>%
+  mutate(boro = str_pad(boro, 1, pad="0")) %>%
+  mutate(block = str_pad(block, 5, pad="0")) %>%
+  mutate(lot = str_pad(lot, 4, pad="0"))
 
-# trim whitespace
-# pad$lhnd <- str_trim(pad$lhnd)
-# pad$hhnd <- str_trim(pad$hhnd)
-# pad$lhns <- str_trim(pad$lhns)
-# pad$hhns <- str_trim(pad$hhns)
-# pad$stname <- str_trim(pad$stname)
+pad <- pad %>%
+  unite(bbl, boro, block, lot, sep="")
 
-# pad[with(pad, lhns == ""),]$lhns <- NA
-# pad[with(pad, lhnd == ""),]$lhnd <- NA
-# pad[with(pad, hhnd == ""),]$hhnd <- NA
-# pad[with(pad, hhns == ""),]$hhns <- NA
-# pad[with(pad, grepl("", addrtype)),]$addrtype <- NA
-
-# - Parse house numbers into integers
-# pad$lnumber <- parse_number(pad$lhnd)
-# pad$rnumber <- parse_number(pad$hhnd)
-
-# - Count of every odd or even house number based on parity
-# pad$difference <- (pad$rnumber - pad$lnumber)
-
-# - The difference of any pair of odd or even numbers will always be even. 
-# pad$interpolatedCount <- ((pad$difference / 2) - 1)
-
-# - Assume addition of two 
-# pad$finalCount <- pad$interpolatedCount + 2
-
-# - This should be refactored because it's wrong
-# pad[is.na(pad$rnumber),]$rnumber <- 0
-# pad[is.na(pad$lnumber),]$lnumber <- 0
-
-# Types:
-# - Non-addressable
-#     addrtype is G, N, or, X, and there is an addrtype
-# - Numeric Range
-#     lhns column ends with '000AA$'
-# - Non-numeric Range, Letter Suffix
-# - Non-numeric Range, Dash-Separated, No Suffix
-# - Non-numeric Range, Dash-Separated, With Suffix
-
-# Classify rowTypes 
+# ROW TYPE CLASSIFICATION
 pad <- pad %>%
   mutate(
     rowType = case_when(
-      (addrtype == 'G') | (addrtype == 'N') | (addrtype == 'X') ~ 'NonAddressable',
-      (grepl("000AA$", lhns) & grepl("000AA$", hhns)) ~ 'numericType',
+      addrtype == 'G' | addrtype == 'N' | addrtype == 'X'                                ~ 'nonAddressable',
+      grepl("000AA$", lhns) & grepl("000AA$", hhns)                                      ~ 'numericType',
       as.numeric(str_sub(lhns, 7, 9)) > 0 & str_sub(lhns, 10, 11) == "AA" & !is.na(lhns) ~ 'nonNumericDashSepNoSuffix'
     )
   )
@@ -82,7 +38,7 @@ pad$houseNums <-
     })
 
 pad <- pad %>% 
-  transform(houseNums = strsplit(houseNums, ',')) %>%
+  mutate(houseNums = strsplit(houseNums, ',')) %>%
   unnest(houseNums)
 
 write.csv(pad, 'data/labs-geosearch-pad-normalized.csv')
