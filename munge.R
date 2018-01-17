@@ -22,10 +22,6 @@ centroids <- read_csv(
 pad <- pad %>%
   left_join(bbl, by = c('boro', 'block', 'lot'))
 
-# pad <- pad %>%
-#   mutate(block = str_pad(block, 5, pad="0")) %>%
-#   mutate(lot = str_pad(lot, 4, pad="0"))
-
 pad <- pad %>%
   unite(billbbl, billboro, billblock, billlot, sep="", remove=FALSE)
 
