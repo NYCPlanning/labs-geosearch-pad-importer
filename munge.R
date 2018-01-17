@@ -53,11 +53,7 @@ pad <- pad %>%
         }
         
         if (x['rowType'] == 'numericType') {
-          if (is.na(x['lcontpar']) & is.na(x['hcontpar'])) {
-            paste(seq(x['lhnd'], x['hhnd'], 2), collapse=',')
-          } else {
-            paste(seq(x['lhnd'], x['hhnd'], 1), collapse=',')
-          }
+          paste(seq(x['lhnd'], x['hhnd'], 2), collapse=',')
         }
       }
     )
