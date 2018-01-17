@@ -11,13 +11,8 @@ var _ = require('lodash');
 module.exports = function(pluto_lookup){
   var stream = through.obj( function( item, enc, next ) {
     try {
-      var boro = item.boro;
-      var block = item.block;
-      var lot = item.lot;
-
       var bbl = item.bbl;
-      console.log(bbl);
-
+      
       var coords = pluto_lookup[bbl];
       item.lng = coords[0];
       item.lat = coords[1];
