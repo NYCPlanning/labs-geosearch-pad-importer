@@ -10,6 +10,7 @@ unzip("data/dataset.zip", exdir = "./data")
 
 "LOADING DATA" %>% print
 pad <- read_csv('data/bobaadr.txt')
+bbl <- read_csv('data/bobabbl.txt')
 centroids <- read_csv(
   'data/centroids.csv',
   col_types = cols(
@@ -19,11 +20,25 @@ centroids <- read_csv(
 
 "CLEANING DATA" %>% print
 pad <- pad %>%
-  mutate(block = str_pad(block, 5, pad="0")) %>%
-  mutate(lot = str_pad(lot, 4, pad="0"))
+  left_join(bbl, by = c('boro', 'block', 'lot'))
+
+# pad <- pad %>%
+#   mutate(block = str_pad(block, 5, pad="0")) %>%
+#   mutate(lot = str_pad(lot, 4, pad="0"))
 
 pad <- pad %>%
-  unite(bbl, boro, block, lot, sep="")
+  unite(billbbl, billboro, billblock, billlot, sep="", remove=FALSE)
+
+pad <- pad %>%
+  unite(bbl, boro, block, lot, sep="", remove=FALSE)
+
+pad <- pad %>%
+  mutate(
+    bbl = case_when(
+      (lot >= 1001 & lot <= 6999) | (lot >= 7501 & lot <= 7599) ~ billbbl,
+      TRUE                                                      ~ bbl
+    )
+  )
 
 pad <- pad %>%
   left_join(centroids, by = 'bbl')
