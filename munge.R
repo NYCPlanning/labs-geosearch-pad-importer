@@ -31,8 +31,8 @@ pad <- pad %>%
 pad <- pad %>%
   mutate(
     bbl = case_when(
-      (lot >= 1001 & lot <= 6999) | (lot >= 7501 & lot <= 7599) ~ billbbl,
-      TRUE                                                      ~ bbl
+      (lot >= 1001 & lot <= 6999) ~ billbbl,
+      TRUE                        ~ bbl
     )
   )
 
@@ -50,6 +50,7 @@ removeTypes <- pad %>%
 pad <- pad %>%
   mutate(
     rowType = case_when(
+      lhns == hhns                                                                          ~ 'singleAddress',
       addrtype == 'G' | addrtype == 'N' | addrtype == 'X'                                   ~ 'nonAddressable',
       grepl("^0", lhns) & grepl("^0", hhns) & grepl("000AA$", lhns) & grepl("000AA$", hhns) ~ 'numericType'
       # as.numeric(str_sub(lhns, 7, 9)) > 0 & str_sub(lhns, 10, 11) == "AA" & !is.na(lhns)  ~ 'nonNumericDashSepNoSuffix'
@@ -68,6 +69,10 @@ pad <- pad %>%
       function(x) {
         if (x['rowType'] == 'nonAddressable') {
           return(NA)
+        }
+        
+        if (x['rowType'] == 'singleAddress') {
+          return(x['lhnd'])
         }
         
         if (x['rowType'] == 'numericType') {
