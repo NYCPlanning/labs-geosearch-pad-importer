@@ -12,7 +12,7 @@ function createCombinedStream(){
     var conf = {file: path.join(defaultPath.datapath, importObject.filename), leveldb: defaultPath.leveldbpath};
     fullStream.append(function(next){
       logger.info('Creating read stream for: ' + conf.file);
-      next(csv.fromPath('/data/nycpad/data/labs-geosearch-pad-normalized.csv', {
+      next(csv.fromPath(conf.file, {
         headers: true,
       }));
     });
