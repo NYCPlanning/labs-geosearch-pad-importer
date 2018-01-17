@@ -2,46 +2,74 @@ library(downloader)
 library(tidyverse)
 
 source <- "https://www1.nyc.gov/assets/planning/download/zip/data-maps/open-data/pad17d.zip"
+centroids <- "https://planninglabs.carto.com/api/v2/sql?q=SELECT%20bbl,%20Round(ST_X(ST_Centroid(the_geom))::numeric,5)%20AS%20lng,%20Round(ST_Y(ST_Centroid(the_geom))::numeric,5)%20AS%20lat%20FROM%20support_mappluto&format=csv&filename=mappluto_centroids"
 
 download(source, dest="data/dataset.zip", mode="wb") 
+download(centroids, dest="data/centroids.csv", mode="wb")
 unzip("data/dataset.zip", exdir = "./data")
 
-# LOAD STEP
+"LOADING DATA" %>% print
 pad <- read_csv('data/bobaadr.txt')
+centroids <- read_csv(
+  'data/centroids.csv',
+  col_types = cols(
+    bbl = col_character()
+  )
+)
 
-# CLEANING STEP
+"CLEANING DATA" %>% print
 pad <- pad %>%
-  mutate(boro = str_pad(boro, 1, pad="0")) %>%
   mutate(block = str_pad(block, 5, pad="0")) %>%
   mutate(lot = str_pad(lot, 4, pad="0"))
 
 pad <- pad %>%
   unite(bbl, boro, block, lot, sep="")
 
-# ROW TYPE CLASSIFICATION
+pad <- pad %>%
+  left_join(centroids, by = 'bbl')
+
+"CLASSIFYING ROWS" %>% print
 pad <- pad %>%
   mutate(
     rowType = case_when(
-      addrtype == 'G' | addrtype == 'N' | addrtype == 'X'                                ~ 'nonAddressable',
-      grepl("000AA$", lhns) & grepl("000AA$", hhns)                                      ~ 'numericType',
-      as.numeric(str_sub(lhns, 7, 9)) > 0 & str_sub(lhns, 10, 11) == "AA" & !is.na(lhns) ~ 'nonNumericDashSepNoSuffix'
+      addrtype == 'G' | addrtype == 'N' | addrtype == 'X'                                   ~ 'nonAddressable',
+      grepl("^0", lhns) & grepl("^0", hhns) & grepl("000AA$", lhns) & grepl("000AA$", hhns) ~ 'numericType'
+      # as.numeric(str_sub(lhns, 7, 9)) > 0 & str_sub(lhns, 10, 11) == "AA" & !is.na(lhns)  ~ 'nonNumericDashSepNoSuffix'
     )
   )
 
-# ROW-WISE EXPANSION AND UNNESTING
+pad <- pad %>%
+  filter(!is.na(rowType))
+
+"SEQUENCING" %>% print
 pad$houseNums <-
   apply(
     pad,
     1,
     function(x) {
-      paste(seq(x['lnumber'], x['rnumber'], 2), collapse=',')
+      if (x['rowType'] == 'nonAddressable') {
+        return(NA)
+      }
+      
+      if (x['rowType'] == 'numericType') {
+        if (is.na(x['lcontpar']) & is.na(x['hcontpar'])) {
+          paste(seq(x['lhnd'], x['hhnd'], 2), collapse=',')
+        } else {
+          paste(seq(x['lhnd'], x['hhnd'], 1), collapse=',')
+        }
+      }
     })
 
-pad <- pad %>% 
-  mutate(houseNums = strsplit(houseNums, ',')) %>%
-  unnest(houseNums)
+"EXPANDING" %>% print
+expanded <- pad %>% 
+  mutate(houseNum = strsplit(houseNums, ',')) %>%
+  unnest(houseNum)
 
-write.csv(pad, 'data/labs-geosearch-pad-normalized.csv')
-write.csv(pad[sample(nrow(pad), nrow(pad) * 0.1), ], 'data/labs-geosearch-pad-normalized-sample-lg.csv')
-write.csv(pad[sample(nrow(pad), nrow(pad) * 0.05), ], 'data/labs-geosearch-pad-normalized-sample-md.csv')
-write.csv(pad[sample(nrow(pad), nrow(pad) * 0.01), ], 'data/labs-geosearch-pad-normalized-sample-sm.csv')
+expanded <- expanded %>%
+  select(bbl, houseNum, stname, zipcode, lng, lat)
+
+"WRITING" %>% print
+write.csv(expanded, 'data/labs-geosearch-pad-normalized.csv')
+write.csv(expanded[sample(nrow(expanded), nrow(expanded) * 0.1), ], 'data/labs-geosearch-pad-normalized-sample-lg.csv')
+write.csv(expanded[sample(nrow(expanded), nrow(expanded) * 0.05), ], 'data/labs-geosearch-pad-normalized-sample-md.csv')
+write.csv(expanded[sample(nrow(expanded), nrow(expanded) * 0.01), ], 'data/labs-geosearch-pad-normalized-sample-sm.csv')

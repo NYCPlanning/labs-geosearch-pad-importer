@@ -5,3 +5,4 @@ zip data/labs-geosearch-pad-normalized-sample-md.zip data/labs-geosearch-pad-nor
 zip data/labs-geosearch-pad-normalized-sample-sm.zip data/labs-geosearch-pad-normalized-sample-sm.csv
 
 s3cmd put data/labs-geosearch-pad-normalized*.zip s3://planninglabs/geosearch-data/
+s3cmd setacl s3://planninglabs/geosearch-data/ --acl-public --recursive
