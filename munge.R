@@ -39,10 +39,12 @@ pad <- pad %>%
 pad <- pad %>%
   left_join(centroids, by = 'bbl')
 
+pad <- pad %>%
+  replace_na(list(addrtype = 'OTHER'))
 
 "FILTER W, F, B addrtypes" %>% print
-pad <- pad %>%
-  filter(addrtype != 'W' & addrtype != 'F' & addrtype != 'B')
+removeTypes <- pad %>%
+  filter(addrtype != 'W' & addrtype != 'F' & addrtype != 'B' & !is.na(addrtype))
 
 "CLASSIFYING ROWS" %>% print
 pad <- pad %>%
