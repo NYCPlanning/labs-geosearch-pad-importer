@@ -42,23 +42,26 @@ pad <- pad %>%
   filter(!is.na(rowType))
 
 "SEQUENCING" %>% print
-pad$houseNums <-
-  apply(
-    pad,
-    1,
-    function(x) {
-      if (x['rowType'] == 'nonAddressable') {
-        return(NA)
-      }
-      
-      if (x['rowType'] == 'numericType') {
-        if (is.na(x['lcontpar']) & is.na(x['hcontpar'])) {
-          paste(seq(x['lhnd'], x['hhnd'], 2), collapse=',')
-        } else {
-          paste(seq(x['lhnd'], x['hhnd'], 1), collapse=',')
+pad <- pad %>%
+  mutate(
+    houseNums = apply(
+      pad,
+      1,
+      function(x) {
+        if (x['rowType'] == 'nonAddressable') {
+          return(NA)
+        }
+        
+        if (x['rowType'] == 'numericType') {
+          if (is.na(x['lcontpar']) & is.na(x['hcontpar'])) {
+            paste(seq(x['lhnd'], x['hhnd'], 2), collapse=',')
+          } else {
+            paste(seq(x['lhnd'], x['hhnd'], 1), collapse=',')
+          }
         }
       }
-    })
+    )
+  )
 
 "EXPANDING" %>% print
 expanded <- pad %>% 

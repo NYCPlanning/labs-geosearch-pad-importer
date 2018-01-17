@@ -1,4 +1,6 @@
 #!/bin/bash
+Rscript ./munge.R
+
 zip data/labs-geosearch-pad-normalized.zip data/labs-geosearch-pad-normalized.csv 
 zip data/labs-geosearch-pad-normalized-sample-lg.zip data/labs-geosearch-pad-normalized-sample-lg.csv
 zip data/labs-geosearch-pad-normalized-sample-md.zip data/labs-geosearch-pad-normalized-sample-md.csv
