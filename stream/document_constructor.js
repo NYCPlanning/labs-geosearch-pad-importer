@@ -34,15 +34,15 @@ module.exports = function(){
       // }
 
         doc.name = {
-          default: `${item.houseNums} ${item.stname}`.trim()
+          default: `${item.houseNum ? item.houseNum + ' ' : ''}${item.stname}`.trim()
         }
 
         doc.phrase = {
-          default: `${item.houseNums} ${item.stname}`.trim()
+          default: `${item.houseNum ? item.houseNum + ' ' : ''}${item.stname}`.trim()
         }
 
         doc.address_parts = {
-          number: item.houseNums,
+          number: item.houseNum,
           street: item.stname,
           zip: item.zipcode
         },
