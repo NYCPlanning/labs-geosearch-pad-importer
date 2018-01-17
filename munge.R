@@ -49,10 +49,6 @@ pad <- pad %>%
       pad,
       1,
       function(x) {
-        if (x['rowType'] == 'singleAddress') {
-          lhns
-        }
-
         if (x['rowType'] == 'nonAddressable') {
           return(NA)
         }
