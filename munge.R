@@ -39,6 +39,11 @@ pad <- pad %>%
 pad <- pad %>%
   left_join(centroids, by = 'bbl')
 
+
+"FILTER W, F, B addrtypes" %>% print
+pad <- pad %>%
+  filter(addrtype != 'W' & addrtype != 'F' & addrtype != 'B')
+
 "CLASSIFYING ROWS" %>% print
 pad <- pad %>%
   mutate(
