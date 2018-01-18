@@ -7,14 +7,11 @@ const fs = require('fs-extra');
 const config = require( 'pelias-config' ).generate(require('../schema'));
 const logger = require('pelias-logger').get('download');
 
-if (require.main === module) {
-  download((err) => {
-    if (err) {
-      logger.error('Failed to download data', err);
-      process.exit(1);
-    }
-    logger.info('All done!');
-  });
+function downloadSource(config, sourceUrl, callback) {
+  const targetDir = config.imports.nycpad.datapath;
+
+  logger.debug(`downloading ${sourceUrl} to ${targetDir}`);
+  child_process.exec(`cd ${targetDir} && { curl -L -X GET --silent --fail --remote-name ${sourceUrl}; } && unzip *`, callback);
 }
 
 function download(callback) {
@@ -32,7 +29,7 @@ function download(callback) {
 
   logger.info(`Downloading sources: ${sources}`);
 
-  fs.ensureDir(config.imports.nycpad.datapath, (err) => {
+  fs.emptyDir(config.imports.nycpad.datapath, (err) => {
     if (err) {
       logger.error(`error making directory ${config.imports.nycpad.datapath}`, err);
       return callback(err);
@@ -48,11 +45,14 @@ function download(callback) {
   });
 }
 
-function downloadSource(config, sourceUrl, callback) {
-  const targetDir = config.imports.nycpad.datapath;
-
-  logger.debug(`downloading ${sourceUrl} to ${targetDir}`);
-  child_process.exec(`cd ${targetDir} && { curl -L -X GET --silent --fail --remote-name ${sourceUrl}; } && unzip *`, callback);
+if (require.main === module) {
+  download((err) => {
+    if (err) {
+      logger.error('Failed to download data', err);
+      process.exit(1);
+    }
+    logger.info('All done!');
+  });
 }
 
 module.exports = download;
