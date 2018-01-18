@@ -64,7 +64,8 @@ pad <- pad %>%
     rowType = case_when(
       lhns == hhns                                                                          ~ 'singleAddress',
       addrtype == 'G' | addrtype == 'N' | addrtype == 'X'                                   ~ 'nonAddressable',
-      grepl("^0", lhns) & grepl("^0", hhns) & grepl("000AA$", lhns) & grepl("000AA$", hhns) ~ 'numericType'
+      grepl("^0", lhns) & grepl("^0", hhns) & grepl("000AA$", lhns) & grepl("000AA$", hhns) ~ 'numericType',
+      str_sub(lhns, 1, 1) == "1" & lhnd != hhnd & str_sub(lhns, 10, 11) == "AA"             ~ 'hyphenNoSuffix'
       # as.numeric(str_sub(lhns, 7, 9)) > 0 & str_sub(lhns, 10, 11) == "AA" & !is.na(lhns)  ~ 'nonNumericDashSepNoSuffix'
     )
   )
@@ -89,6 +90,10 @@ pad <- pad %>%
         
         if (x['rowType'] == 'numericType') {
           paste(seq(x['lhnd'], x['hhnd'], 2), collapse=',')
+        }
+        
+        if (x['rowType'] == 'hyphenNoSuffix'){
+          
         }
       }
     )
