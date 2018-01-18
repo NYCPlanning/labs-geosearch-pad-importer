@@ -115,6 +115,7 @@ expanded %>% filter(is.na(bbl)) %>% nrow %>% ifelse(., paste("✗ WARNING!", ., 
 expanded %>% filter(is.na(stname)) %>% nrow %>% ifelse(., paste("✗ WARNING!", ., "MISSING STNAMES"), "✓ STNAMES") %>% print
 expanded %>% filter(is.na(zipcode)) %>% nrow %>% ifelse(., paste("✗ WARNING!", ., "MISSING ZIPCODES"), "✓ ZIPCODES") %>% print
 expanded %>% nrow %>% paste("TOTAL ROWS:", .) %>% print
+expanded %>% distinct %>% nrow %>% paste("DISTINCT ROWS:",.) %>% print
 
 "WRITING" %>% print
 write_csv(expanded, 'data/labs-geosearch-pad-normalized.csv', na="")
