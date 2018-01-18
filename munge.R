@@ -80,6 +80,10 @@ pad <- pad %>%
       pad,
       1,
       function(x) {
+        if (is.na(x['rowType'])) {
+          return(NA)
+        }
+        
         if (x['rowType'] == 'nonAddressable') {
           return(NA)
         }
@@ -92,9 +96,22 @@ pad <- pad %>%
           paste(seq(x['lhnd'], x['hhnd'], 2), collapse=',')
         }
         
-        if (x['rowType'] == 'hyphenNoSuffix'){
-          
+        if (x['rowType'] == 'hyphenNoSuffix') {
+          paste(
+            seq(
+              parse_number(
+                unlist(str_replace(x['lhnd'], "-", ""))
+              ),
+              parse_number(
+                unlist(str_replace(x['hhnd'], "-", ""))
+              ),
+              2
+            ),
+            collapse=','
+          )
         }
+
+        return(NA)
       }
     )
   )
