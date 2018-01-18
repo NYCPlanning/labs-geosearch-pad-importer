@@ -94,20 +94,30 @@ pad <- pad %>%
         }
         
         if (x['rowType'] == 'hyphenNoSuffix') {
-          return(
-            paste(
+          # handle identical value before prefix
+          lowbefore <- str_sub(x['lhns'], 2, 6);
+          highbefore <- str_sub(x['hhns'], 2, 6);
+          
+          if (lowbefore == highbefore) {
+            afterSequence <- paste(
+              as.integer(lowbefore),
+              '-',
               seq(
                 parse_number(
-                  unlist(str_replace(x['lhnd'], "-", ""))
+                  unlist(str_sub(x['lhns'],7,9))
                 ),
                 parse_number(
-                  unlist(str_replace(x['hhnd'], "-", ""))
+                  unlist(str_sub(x['hhns'],7,9))
                 ),
                 2
               ),
+              sep = "",
               collapse=','
             )
-          )
+            return(afterSequence)
+          }
+          
+          return('differentAfter')
         }
       }
     )
