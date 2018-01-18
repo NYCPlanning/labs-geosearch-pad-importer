@@ -43,8 +43,8 @@ pad <- pad %>%
   replace_na(list(addrtype = 'OTHER'))
 
 "FILTER W, F, B addrtypes" %>% print
-removeTypes <- pad %>%
-  filter(addrtype != 'W' & addrtype != 'F' & addrtype != 'B' & !is.na(addrtype))
+pad <- pad %>%
+  filter(addrtype != 'W' & addrtype != 'F' & addrtype != 'B')
 
 "CLASSIFYING ROWS" %>% print
 pad <- pad %>%
