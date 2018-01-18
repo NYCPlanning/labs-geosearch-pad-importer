@@ -1,0 +1,26 @@
+{
+  "esclient": {
+    "hosts": [{
+      "host": "localhost"
+    }]
+  },
+  "imports": {
+    "nycpad": {
+      "download": [
+        {
+          "sourceURL": "https://planninglabs.nyc3.digitaloceanspaces.com/geosearch-data/labs-geosearch-pad-normalized.zip"
+        }
+      ],
+      "leveldbpath": "/tmp",
+      "datapath": "data/nycpad",
+      "import": [{
+          "filename":"labs-geosearch-pad-normalized.csv"
+      }]
+    },
+    "services": {
+      "pip": {
+        "url": "http://localhost:4200"
+      }
+    }
+  }
+}

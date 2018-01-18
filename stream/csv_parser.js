@@ -1,6 +1,5 @@
 var combinedStream = require('combined-stream');
-// var pbf = require('./pbf');
-var csv = require("fast-csv");
+var csv = require('fast-csv');
 var path = require('path');
 var logger = require('pelias-logger').get('nycpad');
 

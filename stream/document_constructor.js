@@ -6,15 +6,15 @@
 
 var through = require('through2');
 var Document = require('pelias-model').Document;
+
+// override Document.toESDocument so that the meta object
+Document.prototype.toESDocument = require('./to_es_document.js');
+
 var peliasLogger = require( 'pelias-logger' ).get( 'nycpad' );
-var _ = require('lodash');
 
 module.exports = function(){
   var i = 0;
   var stream = through.obj( function( item, enc, next ) {
-    Object.keys(item).forEach((property) => {
-      item[property] = item[property].trim();
-    });
 
     try {
       // if (!item.type || ! item.id) {
@@ -25,45 +25,28 @@ module.exports = function(){
       // we need to assume it will be a venue and later if it turns out to be an address it will get changed
       var doc = new Document( 'nycpad', 'address', uniqueId );
 
-      // Set dummy latitude / longitude
-      // if( item.hasOwnProperty('lat') && item.hasOwnProperty('lon') ){
+      if( item.hasOwnProperty('lat') && item.hasOwnProperty('lng') ){
         doc.setCentroid({
           lat: item.lat,
           lon: item.lng,
         });
-      // }
+      }
 
-        doc.name = {
-          default: `${item.houseNum ? item.houseNum + ' ' : ''}${item.stname}`.trim()
-        }
+      doc.name = {
+        default: `${item.houseNum ? item.houseNum + ' ' : ''}${item.stname}`.trim()
+      };
 
-        doc.phrase = {
-          default: `${item.houseNum ? item.houseNum + ' ' : ''}${item.stname}`.trim()
-        }
+      doc.phrase = {
+        default: `${item.houseNum ? item.houseNum + ' ' : ''}${item.stname}`.trim()
+      };
 
-        doc.address_parts = {
-          number: item.houseNum,
-          street: item.stname,
-          zip: item.zipcode
-        },
+      doc.address_parts = {
+        number: item.houseNum,
+        street: item.stname,
+        zip: item.zipcode
+      };
 
-      // Set latitude / longitude (for ways where the centroid has been precomputed)
-      // else if( item.hasOwnProperty('centroid') ){
-      //   if( item.centroid.hasOwnProperty('lat') && item.centroid.hasOwnProperty('lon') ){
-      //     doc.setCentroid({
-      //       lat: item.centroid.lat,
-      //       lon: item.centroid.lon
-      //     });
-      //   }
-      // }
-
-      // Set noderefs (for ways)
-      // if( item.hasOwnProperty('nodes') ){
-      //   doc.setMeta( 'nodes', item.nodes );
-      // }
-
-      // Store osm tags as a property inside _meta
-      // doc.setMeta( 'tags', item.tags || {} );
+      doc.setMeta('bbl', item.bbl);
 
       // Push instance of Document downstream
       this.push( doc );
