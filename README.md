@@ -1,28 +1,15 @@
-# Authoritative NYC Address Data for the Pelias Geocoder
+# labs-geosearch-pad-importer
 
-This package imports authoritative NYC address data from the [Property Address Directory (PAD)](https://www1.nyc.gov/site/planning/data-maps/open-data.page#pad) into [Pelias](https://github.com/pelias/pelias) (a modular, open-source geocoder built on top of ElasticSearch for fast geocoding).
+A Pelias Importer for Authoritative NYC Addresses. Part of the [NYC Geosearch Geocoder Project](https://github.com/NYCPlanning/labs-geosearch-dockerfiles)
 
-## How we work
+# Introduction
+The NYC Geosearch API is built on Pelias, the open source geocoding engine that powered Mapzen Search.
 
-[NYC Planning Labs](https://planninglabs.nyc) takes on a single project at a time, working closely with our customers from concept to delivery in a matter of weeks.  We conduct regular maintenance between larger projects.  
+<img width="1335" alt="screen shot 2018-01-18 at 2 48 09 pm" src="https://user-images.githubusercontent.com/1833820/35118079-b384f024-fc5e-11e7-9f31-83a281e42381.png">
 
-Take a look at our sprint planning board {link to waffle} to get an idea of our current priorities for this project.
+We are treating the normalization of the PAD data as a separate data workflow from Pelias Import. This script picks up the output of [labs-geosearch-pad-normalize](https://github.com/NYCPlanning/labs-geosearch-pad-normalize) and imports it into the Pelias elasticsearch database.
 
-## How you can help
 
-In the spirit of free software, everyone is encouraged to help improve this project.  Here are some ways you can contribute.
-
-- Comment on or clarify [issues](link to issues)
-- Report [bugs](link to bugs)
-- Suggest new features
-- Write or edit documentation
-- Write code (no patch is too small)
-  - Fix typos
-  - Add comments
-  - Clean up code
-  - Add new features
-
-**[Read more about contributing.](CONTRIBUTING.md)**
 
 ## Requirements
 
@@ -32,34 +19,19 @@ You will need the following things properly installed on your computer.
 - [Node.js](https://nodejs.org/) (with NPM)
 - An elasticsearch database at `localhost:9200` with the pelias index already created
 - Pelias API running at `localhost:4000`
-- Pelias PIP service with NYC whosonfirst running at `localhost:4200`. PIP is used to lookup admin boundaries for each record before it enters the database.
+- Pelias PIP service with NYC whosonfirst data running at `localhost:4200`. PIP is used to lookup admin boundaries for each record before it enters the database.
 
-## Local development
+## Running the Script
 
-- Clone this repo `git clone git@github.com:NYCPlanning/labs-geocoder-api.git`
-- Install Dependencies `npm install`
+Refer to the README in [labs-geosearch-dockerfiles](https://github.com/NYCPlanning/labs-geosearch-dockerfiles) for more about running the script
 
-To download PAD data, use `PELIAS_CONFIG=./config/pelias.json npm run download`
-To run the importer, use `PELIAS_CONFIG=./config/pelias.json npm start`
+The importer has two main functions, downloading the raw data and running the import:
 
-### Simple Leaflet GUI
+### Download
+`npm run download` downloads the normalized pad data and stores in the data directory specified in `pelias.json`
+
+### Import
+`npm start` reads the downloaded csv and imports each row into the pelias elasticsearch database.
+
+## Simple Leaflet GUI
 To load a simple leaflet map with an autocomplete search control, run `npm run map-test` and point your browser to `http://localhost:8000`.  This simple page expects the pelias API to be running at `http://localhost:4000`
-
-## Architecture
-
-{"Lay of the land" structure of the codebase, components...}
-
-
-## Testing and checks
-
-- **ESLint** - We use ESLint with Airbnb's rules for JavaScript projects
-  - Add an ESLint plugin to your text editor to highlight broken rules while you code
-  - You can also run `eslint` at the command line with the `--fix` flag to automatically fix some errors.
-
-## Deployment
-
-{Description of what type of hosting environment is required, and steps for how Labs deploys -- e.g `git push dokku master`.}
-
-## Contact us
-
-You can find us on Twitter at [@nycplanninglabs](https://twitter.com/nycplanninglabs), or comment on issues and we'll follow up as soon as we can. If you'd like to send an email, use [labs_dl@planning.nyc.gov](mailto:labs_dl@planning.nyc.gov)
