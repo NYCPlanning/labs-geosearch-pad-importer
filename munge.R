@@ -98,26 +98,11 @@ pad <- pad %>%
         }
         
         if (x['rowType'] == 'hyphenSuffix') {
-          lowBefore <- str_split(x['lhnd'],'-')[[1]][1];
-          lowAfter <- paste(str_extract_all(str_split(x['lhnd'],'-')[[1]][2], '[0-9]')[[1]], collapse="");
-          highBefore <- str_split(x['hhnd'],'-')[[1]][1];
-          highAfter <-  paste(str_extract_all(str_split(x['hhnd'],'-')[[1]][2], '[0-9]')[[1]], collapse="");
-
-          sequence <- seq(
+          numerics <- seq(
             str_extract_all(x['lhnd'], '[0-9]') %>% unlist %>% paste(collapse="") %>% parse_number,
             str_extract_all(x['hhnd'], '[0-9]') %>% unlist %>% paste(collapse="") %>% parse_number,
             2
           )
-          
-          noHyphens = paste(sequence);
-          
-          hyphens <- paste(
-            str_sub(sequence, 1, nchar(lowBefore)), 
-            '-', 
-            str_sub(sequence, -nchar(lowAfter)),
-            sep = ""
-          );
-          
           
           suffices <- LETTERS[
             seq(
@@ -126,15 +111,7 @@ pad <- pad %>%
             )
             ]
           
-          noHyphenAndSuffix <- paste(expand.grid(a = noHyphens, b = suffices) %>% unite(c,a,b, sep=""), collapse=',') ;
-          hyphenAndSuffix <- paste(expand.grid(a = hyphens, b = suffices) %>% unite(c,a,b, sep=""), collapse = ',');
-    
-          combined <- paste(c(noHyphenAndSuffix, hyphenAndSuffix), collapse=',')
-          
-          print(noHyphenAndSuffix)
-          print(hyphenAndSuffix)
-          print(combined)
-          return(combined)
+          return(expand.grid(a = numerics, b = suffices) %>% unite(c,a,b, sep="") %>% paste(collapse=","))
         }
       }
     )
