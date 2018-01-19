@@ -100,15 +100,8 @@ pad <- pad %>%
           highBefore <- str_split(x['hhnd'],'-')[[1]][1];
           highAfter <- str_split(x['hhnd'],'-')[[1]][2];
           
-          lowLengthBefore <- nchar();
-          lowLengthAfter <- nchar(str_split(x['lhnd'],'-')[[1]][2]);
-          highLengthBefore <- nchar(str_split(x['hhnd'],'-')[[1]][1]);
-          highLengthAfter <- nchar(str_split(x['hhnd'],'-')[[1]][2]);
-          
           # handle same length before and after hyphen, and lowbefore == highbefore
-          if ((nchar(lowBefore) == nchar(highBefore)) 
-              && (nchar(lowAfter) == nchar(highAfter)) 
-              && (lowBefore == highBefore)) {
+          if ((lowBefore == highBefore) && (nchar(lowAfter) == nchar(highAfter))) {
             # remove hyphen
             lowCombined <- gsub("-", "", x['lhnd'])
             highCombined <- gsub("-", "", x['hhnd'])
