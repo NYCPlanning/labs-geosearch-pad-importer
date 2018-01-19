@@ -65,11 +65,10 @@ pad <- pad %>%
       lhns == hhns                                                                          ~ 'singleAddress',
       addrtype == 'G' | addrtype == 'N' | addrtype == 'X'                                   ~ 'nonAddressable',
       grepl("^0", lhns) & grepl("^0", hhns) & grepl("000AA$", lhns) & grepl("000AA$", hhns) ~ 'numericType',
-      str_sub(lhns, 1, 1) == "1" & lhnd != hhnd & str_sub(lhns, 10, 11) == "AA" &
-        str_sub(hhns, 1, 1) == "1" & hhnd != hhnd & str_sub(hhns, 10, 11) == "AA"           ~ 'hyphenNoSuffix',
+      str_sub(lhns, 1, 1) == "1" & lhnd != hhnd & str_sub(lhns, 10, 11) == "AA"             ~ 'hyphenNoSuffix',
+      str_sub(lhns, 1, 1) == "0" & str_sub(lhns, 10, 10) %in% c("M","N","O")                ~ 'nohyphenSuffix',
       str_sub(lhns, 1, 1) == "1" & str_sub(lhns, 10, 10) %in% c('M', 'N', 'O')  &
         str_sub(hhns, 1, 1) == "1" & str_sub(hhns, 10, 10) %in% c('M', 'N', 'O')            ~ 'hyphenSuffix'
-      # as.numeric(str_sub(lhns, 7, 9)) > 0 & str_sub(lhns, 10, 11) == "AA" & !is.na(lhns)  ~ 'nonNumericDashSepNoSuffix'
     )
   )
 
@@ -97,6 +96,48 @@ pad <- pad %>%
           return(paste(seq(x['lhnd'], x['hhnd'], 2), collapse=','))
         }
         
+        if (x['rowType'] == 'hyphenNoSuffix') {
+          
+          lowBefore <- str_split(x['lhnd'],'-')[[1]][1];
+          lowAfter <- str_split(x['lhnd'],'-')[[1]][2];
+          highBefore <- str_split(x['hhnd'],'-')[[1]][1];
+          highAfter <- str_split(x['hhnd'],'-')[[1]][2];
+          
+          # handle same length before and after hyphen, and lowbefore == highbefore
+          if ((lowBefore == highBefore) && (nchar(lowAfter) == nchar(highAfter))) {
+            # remove hyphen
+            lowCombined <- gsub("-", "", x['lhnd'])
+            highCombined <- gsub("-", "", x['hhnd'])
+            
+            # generate numerical sequence
+            sequence <- seq(
+              parse_number(
+                unlist(lowCombined)
+              ),
+              parse_number(
+                unlist(highCombined)
+              ),
+              2
+            );
+            
+            # convert numbers to strings for non-hyphenated housenums
+            noHyphens <- paste(sequence)
+            
+            # add the hyphen in the original position
+            hyphens <- paste(
+              str_sub(sequence, 1, nchar(lowBefore)), 
+              '-', 
+              str_sub(sequence, -nchar(lowAfter)),
+              sep = ""
+            );
+     
+            combined <- paste(c(hyphens, noHyphens), collapse=',');
+            return(combined);
+          }
+          
+          return(NA);
+        }
+
         if (x['rowType'] == 'hyphenSuffix') {
           lowBefore <- str_split(x['lhnd'],'-')[[1]][1];
           lowAfter <- paste(str_extract_all(str_split(x['lhnd'],'-')[[1]][2], '[0-9]')[[1]], collapse="");
@@ -133,6 +174,8 @@ pad <- pad %>%
           
           return(combined)
         }
+        
+        return(NA)
       }
     )
   )
