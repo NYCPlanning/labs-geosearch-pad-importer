@@ -66,8 +66,9 @@ pad <- pad %>%
       addrtype == 'G' | addrtype == 'N' | addrtype == 'X'                                   ~ 'nonAddressable',
       grepl("^0", lhns) & grepl("^0", hhns) & grepl("000AA$", lhns) & grepl("000AA$", hhns) ~ 'numericType',
       str_sub(lhns, 1, 1) == "1" & lhnd != hhnd & str_sub(lhns, 10, 11) == "AA"             ~ 'hyphenNoSuffix',
-      str_sub(lhns, 1, 1) == "0" & str_sub(lhns, 10, 10) %in% c("M","N","O")                ~ 'nohyphenSuffix'
-      # as.numeric(str_sub(lhns, 7, 9)) > 0 & str_sub(lhns, 10, 11) == "AA" & !is.na(lhns)  ~ 'nonNumericDashSepNoSuffix'
+      str_sub(lhns, 1, 1) == "0" & str_sub(lhns, 10, 10) %in% c("M","N","O")                ~ 'nohyphenSuffix',
+      str_sub(lhns, 1, 1) == "1" & str_sub(lhns, 10, 10) %in% c('M', 'N', 'O')  &
+        str_sub(hhns, 1, 1) == "1" & str_sub(hhns, 10, 10) %in% c('M', 'N', 'O')            ~ 'hyphenSuffix'
     )
   )
 
@@ -75,6 +76,8 @@ pad <- pad %>%
   filter(!is.na(rowType))
 
 "SEQUENCING" %>% print
+characterMap <- tibble(keys = seq(1, length(LETTERS)), values = LETTERS)
+
 pad <- pad %>%
   mutate(
     houseNums = apply(
@@ -132,8 +135,47 @@ pad <- pad %>%
             return(combined);
           }
           
-          return('');
+          return(NA);
         }
+
+        if (x['rowType'] == 'hyphenSuffix') {
+          lowBefore <- str_split(x['lhnd'],'-')[[1]][1];
+          lowAfter <- paste(str_extract_all(str_split(x['lhnd'],'-')[[1]][2], '[0-9]')[[1]], collapse="");
+          highBefore <- str_split(x['hhnd'],'-')[[1]][1];
+          highAfter <-  paste(str_extract_all(str_split(x['hhnd'],'-')[[1]][2], '[0-9]')[[1]], collapse="");
+
+          sequence <- seq(
+            str_extract_all(x['lhnd'], '[0-9]') %>% unlist %>% paste(collapse="") %>% parse_number,
+            str_extract_all(x['hhnd'], '[0-9]') %>% unlist %>% paste(collapse="") %>% parse_number,
+            2
+          )
+          
+          noHyphens = paste(sequence);
+          
+          hyphens <- paste(
+            str_sub(sequence, 1, nchar(lowBefore)), 
+            '-', 
+            str_sub(sequence, -nchar(lowAfter)),
+            sep = ""
+          );
+          
+          
+          suffices <- LETTERS[
+            seq(
+              characterMap %>% filter(values == str_extract(x['lhnd'], '[A-Z]') %>% unlist) %>% select(keys) %>% unlist,
+              characterMap %>% filter(values == str_extract(x['hhnd'], '[A-Z]') %>% unlist) %>% select(keys) %>% unlist
+            )
+          ]
+          
+          noHyphenAndSuffix <- paste(expand.grid(a = noHyphens, b = suffices) %>% unite(c,a,b, sep=""), collapse=',') ;
+          hyphenAndSuffix <- paste(expand.grid(a = hyphens, b = suffices) %>% unite(c,a,b, sep=""), collapse = ',');
+    
+          combined <- paste(c(noHyphenAndSuffix, hyphenAndSuffix), collapse=',')
+          
+          return(combined)
+        }
+        
+        return(NA)
       }
     )
   )
@@ -145,6 +187,10 @@ expanded <- pad %>%
   mutate(lgc = strsplit(gsub("(.{2})", "\\1,", validlgcs), ',')) %>% 
   unnest(lgc) %>%
   inner_join(snd, by=c('boro', 'sc5', 'lgc'))
+
+# Type Distribution
+pad %>% group_by(rowType) %>% summarise(count = length(rowType)) %>% print
+expanded %>% group_by(rowType) %>% summarise(count = length(rowType)) %>% print
 
 expanded <- expanded %>%
   select(bbl, houseNum, stname = alt_st_name, zipcode, lng, lat)
