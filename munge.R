@@ -95,13 +95,20 @@ pad <- pad %>%
         
         if (x['rowType'] == 'hyphenNoSuffix') {
           
-          lowLengthBefore <- nchar(str_split(x['lhnd'],'-')[[1]][1]);
+          lowBefore <- str_split(x['lhnd'],'-')[[1]][1];
+          lowAfter <- str_split(x['lhnd'],'-')[[1]][2];
+          highBefore <- str_split(x['hhnd'],'-')[[1]][1];
+          highAfter <- str_split(x['hhnd'],'-')[[1]][2];
+          
+          lowLengthBefore <- nchar();
           lowLengthAfter <- nchar(str_split(x['lhnd'],'-')[[1]][2]);
           highLengthBefore <- nchar(str_split(x['hhnd'],'-')[[1]][1]);
           highLengthAfter <- nchar(str_split(x['hhnd'],'-')[[1]][2]);
           
-          # handle same length before and after hyphen
-          if ((lowLengthBefore == highLengthBefore) && (lowLengthAfter == highLengthAfter)) {
+          # handle same length before and after hyphen, and lowbefore == highbefore
+          if ((nchar(lowBefore) == nchar(highBefore)) 
+              && (nchar(lowAfter) == nchar(highAfter)) 
+              && (lowBefore == highBefore)) {
             # remove hyphen
             lowCombined <- gsub("-", "", x['lhnd'])
             highCombined <- gsub("-", "", x['hhnd'])
@@ -122,9 +129,9 @@ pad <- pad %>%
             
             # add the hyphen in the original position
             hyphens <- paste(
-              str_sub(sequence, 1, lowLengthBefore), 
+              str_sub(sequence, 1, nchar(lowBefore)), 
               '-', 
-              str_sub(sequence, -lowLengthAfter),
+              str_sub(sequence, -nchar(lowAfter)),
               sep = ""
             );
      
