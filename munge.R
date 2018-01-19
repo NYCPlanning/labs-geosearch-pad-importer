@@ -64,7 +64,11 @@ pad <- pad %>%
     rowType = case_when(
       lhns == hhns                                                                          ~ 'singleAddress',
       addrtype == 'G' | addrtype == 'N' | addrtype == 'X'                                   ~ 'nonAddressable',
-      grepl("^0", lhns) & grepl("^0", hhns) & grepl("000AA$", lhns) & grepl("000AA$", hhns) ~ 'numericType'
+      grepl("^0", lhns) & grepl("^0", hhns) & grepl("000AA$", lhns) & grepl("000AA$", hhns) ~ 'numericType',
+      str_sub(lhns, 1, 1) == "1" & lhnd != hhnd & str_sub(lhns, 10, 11) == "AA" &
+        str_sub(hhns, 1, 1) == "1" & hhnd != hhnd & str_sub(hhns, 10, 11) == "AA"           ~ 'hyphenNoSuffix',
+      str_sub(lhns, 1, 1) == "1" & str_sub(lhns, 10, 10) %in% c('M', 'N', 'O')  &
+        str_sub(hhns, 1, 1) == "1" & str_sub(hhns, 10, 10) %in% c('M', 'N', 'O')            ~ 'hyphenSuffix'
       # as.numeric(str_sub(lhns, 7, 9)) > 0 & str_sub(lhns, 10, 11) == "AA" & !is.na(lhns)  ~ 'nonNumericDashSepNoSuffix'
     )
   )
@@ -73,6 +77,8 @@ pad <- pad %>%
   filter(!is.na(rowType))
 
 "SEQUENCING" %>% print
+characterMap <- tibble(keys = seq(1, length(LETTERS)), values = LETTERS)
+
 pad <- pad %>%
   mutate(
     houseNums = apply(
@@ -88,7 +94,24 @@ pad <- pad %>%
         }
         
         if (x['rowType'] == 'numericType') {
-          paste(seq(x['lhnd'], x['hhnd'], 2), collapse=',')
+          return(paste(seq(x['lhnd'], x['hhnd'], 2), collapse=','))
+        }
+        
+        if (x['rowType'] == 'hyphenSuffix') {
+          numerics <- seq(
+            str_extract_all(x['lhnd'], '[0-9]') %>% unlist %>% paste(collapse="") %>% parse_number,
+            str_extract_all(x['hhnd'], '[0-9]') %>% unlist %>% paste(collapse="") %>% parse_number,
+            2
+          )
+          
+          suffices <- LETTERS[
+            seq(
+              characterMap %>% filter(values == str_extract(x['lhnd'], '[A-Z]') %>% unlist) %>% select(keys) %>% unlist,
+              characterMap %>% filter(values == str_extract(x['hhnd'], '[A-Z]') %>% unlist) %>% select(keys) %>% unlist
+            )
+            ]
+          
+          return(expand.grid(a = numerics, b = suffices) %>% unite(c,a,b, sep="") %>% paste(collapse=","))
         }
       }
     )
@@ -101,6 +124,10 @@ expanded <- pad %>%
   mutate(lgc = strsplit(gsub("(.{2})", "\\1,", validlgcs), ',')) %>% 
   unnest(lgc) %>%
   inner_join(snd, by=c('boro', 'sc5', 'lgc'))
+
+# Type Distribution
+pad %>% group_by(rowType) %>% summarise(count = length(rowType)) %>% print
+expanded %>% group_by(rowType) %>% summarise(count = length(rowType)) %>% print
 
 expanded <- expanded %>%
   select(bbl, houseNum, stname = alt_st_name, zipcode, lng, lat)
