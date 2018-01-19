@@ -2,7 +2,6 @@
 .Rhistory
 .RData
 .Ruserdata
-
 .env
-
 data/*
+unique_combos_simp.csv
