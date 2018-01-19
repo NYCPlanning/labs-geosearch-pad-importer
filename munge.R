@@ -94,30 +94,45 @@ pad <- pad %>%
         }
         
         if (x['rowType'] == 'hyphenNoSuffix') {
-          # handle identical value before prefix
-          lowbefore <- str_sub(x['lhns'], 2, 6);
-          highbefore <- str_sub(x['hhns'], 2, 6);
           
-          if (lowbefore == highbefore) {
-            afterSequence <- paste(
-              as.integer(lowbefore),
-              '-',
-              seq(
-                parse_number(
-                  unlist(str_sub(x['lhns'],7,9))
-                ),
-                parse_number(
-                  unlist(str_sub(x['hhns'],7,9))
-                ),
-                2
+          lowLengthBefore <- nchar(str_split(x['lhnd'],'-')[[1]][1]);
+          lowLengthAfter <- nchar(str_split(x['lhnd'],'-')[[1]][2]);
+          highLengthBefore <- nchar(str_split(x['hhnd'],'-')[[1]][1]);
+          highLengthAfter <- nchar(str_split(x['hhnd'],'-')[[1]][2]);
+          
+          # handle same length before and after hyphen
+          if ((lowLengthBefore == highLengthBefore) && (lowLengthAfter == highLengthAfter)) {
+            # remove hyphen
+            lowCombined <- gsub("-", "", x['lhnd'])
+            highCombined <- gsub("-", "", x['hhnd'])
+            
+            # generate numerical sequence
+            sequence <- seq(
+              parse_number(
+                unlist(lowCombined)
               ),
-              sep = "",
-              collapse=','
-            )
-            return(afterSequence)
+              parse_number(
+                unlist(highCombined)
+              ),
+              2
+            );
+            
+            # convert numbers to strings for non-hyphenated housenums
+            noHyphens <- paste(sequence)
+            
+            # add the hyphen in the original position
+            hyphens <- paste(
+              str_sub(sequence, 1, lowLengthBefore), 
+              '-', 
+              str_sub(sequence, -lowLengthAfter),
+              sep = ""
+            );
+     
+            combined <- paste(c(hyphens, noHyphens), collapse=',');
+            return(combined);
           }
           
-          return('differentAfter')
+          return('');
         }
       }
     )
