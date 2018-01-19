@@ -124,16 +124,13 @@ pad <- pad %>%
               characterMap %>% filter(values == str_extract(x['lhnd'], '[A-Z]') %>% unlist) %>% select(keys) %>% unlist,
               characterMap %>% filter(values == str_extract(x['hhnd'], '[A-Z]') %>% unlist) %>% select(keys) %>% unlist
             )
-            ]
+          ]
           
           noHyphenAndSuffix <- paste(expand.grid(a = noHyphens, b = suffices) %>% unite(c,a,b, sep=""), collapse=',') ;
           hyphenAndSuffix <- paste(expand.grid(a = hyphens, b = suffices) %>% unite(c,a,b, sep=""), collapse = ',');
     
           combined <- paste(c(noHyphenAndSuffix, hyphenAndSuffix), collapse=',')
           
-          print(noHyphenAndSuffix)
-          print(hyphenAndSuffix)
-          print(combined)
           return(combined)
         }
       }
