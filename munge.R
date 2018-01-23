@@ -169,7 +169,12 @@ pad <- pad %>%
         }
 
         if (x['rowType'] == 'singleAddress') {
-          return(singleAddress(x['lhnd']))
+          # if no hyphen, return lhnd, else return both lhnd and lhnd with the hyphen removed
+          if (grepl('-', x['lhnd'])) {
+            noHyphenlhnd <- gsub("-", "", x['lhnd'])
+            return(paste(x['lhnd'], noHyphenlhnd, sep=','))
+          }
+          return(x['lhnd'])
         }
 
         if (x['rowType'] == 'numericType') {
