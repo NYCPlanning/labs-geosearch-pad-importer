@@ -8,7 +8,7 @@ numericType <- function(from, to) {
   return(paste(seq(from, to, 2), collapse=','))
 }
 
-hyphenNoSuffix <- function(lNumeric, rNumeric, lDashNumeric, rDashNumeric) {
+hyphenNoSuffix <- function(lNumeric, rNumeric, lhyphenNumeric, rhyphenNumeric) {
     houseNumSeq <- seq(lNumeric, rNumeric, 2);
 
     # convert numbers to strings for non-hyphenated housenums
@@ -16,9 +16,9 @@ hyphenNoSuffix <- function(lNumeric, rNumeric, lDashNumeric, rDashNumeric) {
 
     # add the hyphen in the original position
     hyphenated <- paste(
-      str_sub(houseNumSeq, 1, nchar(parse_character(lDashNumeric))),
+      str_sub(houseNumSeq, 1, nchar(parse_character(lhyphenNumeric))),
       '-',
-      str_sub(houseNumSeq, nchar(parse_character(lDashNumeric)) + 1, -1),
+      str_sub(houseNumSeq, nchar(parse_character(lhyphenNumeric)) + 1, -1),
       sep = ""
     );
 
@@ -83,7 +83,7 @@ hyphenSuffix <- function(lhnd, hhnd) {
 #         }
 # 
 #         if (x['rowType'] == 'numericType') {
-#           return(numericType(x['lhns_ldash_i'], x['hhns_ldash_i']))
+#           return(numericType(x['lhns_lhyphen_i'], x['hhns_lhyphen_i']))
 #         }
 # 
 #         if (x['rowType'] == 'hyphenNoSuffix') {
@@ -91,8 +91,8 @@ hyphenSuffix <- function(lhnd, hhnd) {
 #             hyphenNoSuffix(
 #               x['lhns_numeric'],
 #               x['hhns_numeric'],
-#               x['lhns_ldash_i'],
-#               x['lhns_rdash_i']
+#               x['lhns_lhyphen_i'],
+#               x['lhns_rhyphen_i']
 #             )
 #           )
 #         }

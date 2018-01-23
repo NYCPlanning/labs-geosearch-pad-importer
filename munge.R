@@ -15,14 +15,17 @@ download(bincentroids, dest="data/bincentroids.csv", mode="wb")
 unzip("data/dataset.zip", exdir = "./data")
 
 "LOADING DATA" %>% print
+# Read PAD
 padRaw <- read_csv('data/bobaadr.txt',
  col_types = cols(
    bin = col_character()
  ))
 
+# Read BBL data for condos to improve BBL key later
 bbl <- read_csv('data/bobabbl.txt') %>%
   select(boro, block, lot, billboro, billblock, billlot)
 
+# Read Street Names Database to join in alternates 
 snd <- read_fwf(
   'data/snd17Dcow.txt', 
   fwf_widths(
@@ -32,6 +35,7 @@ snd <- read_fwf(
   skip = 1) %>%
   select(boro, sc5, lgc, alt_st_name = stname, full_stname, primary_flag, principal_flag)
 
+# Read BBL centroids data, make them distinct on the BBL key
 bblcentroids <- read_csv(
   'data/bblcentroids.csv',
   col_types = cols(
@@ -40,6 +44,7 @@ bblcentroids <- read_csv(
 )  %>%
   distinct(bbl, .keep_all=TRUE)
 
+# Read BIN centroids data, make them distinct on the BIN key
 bincentroids <- read_csv(
   'data/bincentroids.csv',
   col_types = cols(
@@ -48,70 +53,58 @@ bincentroids <- read_csv(
 ) %>%
   distinct(bin, .keep_all=TRUE)
 
+# Read suffix lookup table to join on position-separated suffix code
 suffix_lookup <- read_csv(
   'suffix_lookup.csv'
 )
 
 "CLEANING DATA" %>% print
+# Left join BBL bill data; unite boro, block, lots, for a concatenated join keys
 pad <- padRaw %>%
-  left_join(bbl, by = c('boro', 'block', 'lot'))
-
-pad <- pad %>%
-  unite(billbbl, billboro, billblock, billlot, sep="", remove=FALSE)
-
-pad <- pad %>%
-  unite(bbl, boro, block, lot, sep="", remove=FALSE)
-
-pad <- pad %>%
-  separate(lhns, c('lhns_dash', 'lhns_ldash', 'lhns_rdash', 'lhns_suffix'), sep=c(1,6,9), remove=FALSE) %>%
-  separate(hhns, c('hhns_dash', 'hhns_ldash', 'hhns_rdash', 'hhns_suffix'), sep=c(1,6,9), remove=FALSE) %>%
-  mutate(lhns_dash = parse_logical(lhns_dash)) %>%
-  mutate(hhns_dash = parse_logical(hhns_dash)) %>%
-  left_join(suffix_lookup, by=c('lhns_suffix' = 'code')) %>%
-  mutate(lhns_suffix = suffix) %>%
-  left_join(suffix_lookup, by=c('hhns_suffix' = 'code'), suffix=c('l','h')) %>%
-  mutate(hhns_suffix = suffixh)
-
-pad <- pad %>%
-  mutate(
-    lhns_rdash = case_when(
-      (lhns_dash == TRUE) ~ lhns_rdash
-    )
-  )
-
-pad <- pad %>%
-  mutate(
-    hhns_rdash = case_when(
-      (hhns_dash == TRUE) ~ hhns_rdash
-    )
-  )
-
-pad <- pad %>%
-  mutate(lhns_ldash_i = parse_integer(lhns_ldash)) %>%
-  mutate(lhns_rdash_i = parse_integer(lhns_rdash)) %>%
-  mutate(hhns_ldash_i = parse_integer(hhns_ldash)) %>%
-  mutate(hhns_rdash_i = parse_integer(hhns_rdash))
-
-pad <- pad %>%
-  mutate(
-    lhns_numeric = parse_integer(str_replace(lhnd, '\\D+', '')),
-    lhns_ldash_i = parse_integer(lhns_ldash_i),
-    lhns_rdash_i = parse_integer(lhns_rdash_i)
-  )
-
-pad <- pad %>%
-  mutate(
-    hhns_numeric = parse_integer(str_replace(hhnd, '\\D+', '')),
-    hhns_ldash_i = parse_integer(hhns_ldash_i),
-    hhns_rdash_i = parse_integer(hhns_rdash_i)
-  )
-
-pad <- pad %>%
+  left_join(bbl, by = c('boro', 'block', 'lot')) %>%
+  unite(billbbl, billboro, billblock, billlot, sep="", remove=FALSE) %>%
+  unite(bbl, boro, block, lot, sep="", remove=FALSE) %>%
   mutate(
     bbl = case_when(
       (lot >= 1001 & lot <= 6999) ~ billbbl,
       TRUE                        ~ bbl
     )
+  )
+
+# Split the house number sort columns into discrete columns with separator being the specific format position of the PAD data.
+# Also, create new columns that are numeric or character-parsed versions of the columns for later use.
+pad <- pad %>%
+  separate(lhns, c('lhns_hyphen', 'lhns_lhyphen', 'lhns_rhyphen', 'lhns_suffix'), sep=c(1,6,9), remove=FALSE) %>%
+  separate(hhns, c('hhns_hyphen', 'hhns_lhyphen', 'hhns_rhyphen', 'hhns_suffix'), sep=c(1,6,9), remove=FALSE) %>%
+  mutate(lhns_hyphen = parse_logical(lhns_hyphen)) %>%
+  mutate(hhns_hyphen = parse_logical(hhns_hyphen)) %>%
+  left_join(suffix_lookup, by=c('lhns_suffix' = 'code')) %>%
+  mutate(lhns_suffix = suffix) %>%
+  left_join(suffix_lookup, by=c('hhns_suffix' = 'code'), suffix=c('l','h')) %>%
+  mutate(hhns_suffix = suffixh) %>%
+  mutate(
+    lhns_rhyphen = case_when(
+      (lhns_hyphen == TRUE) ~ lhns_rhyphen
+    )
+  ) %>%
+  mutate(
+    hhns_rhyphen = case_when(
+      (hhns_hyphen == TRUE) ~ hhns_rhyphen
+    )
+  ) %>%
+  mutate(lhns_lhyphen_i = parse_integer(lhns_lhyphen)) %>%
+  mutate(lhns_rhyphen_i = parse_integer(lhns_rhyphen)) %>%
+  mutate(hhns_lhyphen_i = parse_integer(hhns_lhyphen)) %>%
+  mutate(hhns_rhyphen_i = parse_integer(hhns_rhyphen)) %>%
+  mutate(
+    lhns_numeric = parse_integer(str_replace(lhnd, '\\D+', '')),
+    lhns_lhyphen_i = parse_integer(lhns_lhyphen_i),
+    lhns_rhyphen_i = parse_integer(lhns_rhyphen_i)
+  ) %>%
+  mutate(
+    hhns_numeric = parse_integer(str_replace(hhnd, '\\D+', '')),
+    hhns_lhyphen_i = parse_integer(hhns_lhyphen_i),
+    hhns_rhyphen_i = parse_integer(hhns_rhyphen_i)
   )
 
 # join on bin(pluto) and bbl(building footprint) lookups to get lat and lng,
@@ -122,39 +115,49 @@ pad <- pad %>%
   mutate(
     lat = case_when(
       is.na(lat.x) & is.na(lat.y)   ~ lat.y,
-      TRUE            ~ lat.x
+      TRUE                          ~ lat.x
     ),
     lng = case_when(
       is.na(lat.x) & is.na(lat.y)   ~ lng.y,
-      TRUE            ~ lng.x
+      TRUE                          ~ lng.x
     )
   )
 
+# Replace NAs values for `addrtype` and `validlgcs` columns because
+# they must be character-type values to be used in other functions.
+# NA address types are asssigned as "OTHER"
+# validlgcs is assigned blank string for string substitution 
 pad <- pad %>%
   replace_na(list(addrtype = 'OTHER', validlgcs = ''))
 
-"FILTER W, F, B addrtypes" %>% print
+"FILTERING ROWS" %>% print
+# W, F, B adresses types are filtered out because they are not useful in a geocoder
 pad <- pad %>%
   filter(addrtype != 'W' & addrtype != 'F' & addrtype != 'B')
 
 "CLASSIFYING ROWS" %>% print
+# This step assigns a rowType to each row by creating a new column called rowType, checking some
+# conditions, and seting the value for that row's rowType as one of the several types. These types
+# determine how the row is interpolated (or not), and sequenced, so it can be expanded into new rows.
+# Finally, this will filter out any rows that don't get assigned a rowType. 
 pad <- pad %>%
   mutate(
     rowType = case_when(
       lhns == hhns                                                                          ~ 'singleAddress',
       addrtype == 'G' | addrtype == 'N' | addrtype == 'X'                                   ~ 'nonAddressable',
-      lhns_dash == FALSE & is.na(lhns_suffix) & is.na(hhns_suffix)                          ~ 'numericType',
-      lhns_dash == TRUE & lhnd != hhnd & is.na(lhns_suffix) & is.na(hhns_suffix)            ~ 'hyphenNoSuffix',
-      lhns_dash == FALSE & lhns_suffix %in% LETTERS                                         ~ 'noHyphenSuffix',
-      lhns_dash == TRUE & lhns_suffix %in% LETTERS  &
-        lhns_dash == TRUE & hhns_suffix %in% LETTERS                                        ~ 'hyphenSuffix'
+      lhns_hyphen == FALSE & is.na(lhns_suffix) & is.na(hhns_suffix)                          ~ 'numericType',
+      lhns_hyphen == TRUE & lhnd != hhnd & is.na(lhns_suffix) & is.na(hhns_suffix)            ~ 'hyphenNoSuffix',
+      lhns_hyphen == FALSE & lhns_suffix %in% LETTERS                                         ~ 'noHyphenSuffix',
+      lhns_hyphen == TRUE & lhns_suffix %in% LETTERS  &
+        lhns_hyphen == TRUE & hhns_suffix %in% LETTERS                                        ~ 'hyphenSuffix'
     )
-  )
-
-pad <- pad %>%
+  ) %>%
   filter(!is.na(rowType))
 
 "SEQUENCING" %>% print
+# This step creates a new column, `houseNums`, which is either NA or a comma-separated list of value(s). 
+# Based on the rowType above, it will delegate a particular row in the iteration to a specific function
+# that constructs the comma-sparated list. This list is not a true R list, but a simple character with commas and values. 
 pad <- pad %>%
   mutate(
     houseNums = apply(
@@ -170,7 +173,7 @@ pad <- pad %>%
         }
 
         if (x['rowType'] == 'numericType') {
-          return(numericType(x['lhns_ldash_i'], x['hhns_ldash_i']))
+          return(numericType(x['lhns_lhyphen_i'], x['hhns_lhyphen_i']))
         }
 
         if (x['rowType'] == 'hyphenNoSuffix') {
@@ -178,8 +181,8 @@ pad <- pad %>%
             hyphenNoSuffix(
               x['lhns_numeric'],
               x['hhns_numeric'],
-              x['lhns_ldash_i'],
-              x['lhns_rdash_i']
+              x['lhns_lhyphen_i'],
+              x['lhns_rhyphen_i']
             )
           )
         }
@@ -194,9 +197,15 @@ pad <- pad %>%
   )
 
 "CHECKING EXPANSION COLUMN FOR NON-NULL/NON-NA TYPES: " %>% print
+# For debugging, check if there were any rows that were missed in the iteration. 
 pad %>% distinct(typeof(houseNums)) %>% print
 
 "EXPANDING" %>% print
+# This step unnests the data frame into the expanded form. It first creates a new column
+# that splits the comma-separated string into an R-native list that is used for unnest. 
+# It then does any other unnests.
+# Two unnests are performed here: first, the interpolations, then an unnest for the LGC join keys
+# After the latter joinkey is created, it performs an inner_join.
 expanded <- pad %>% 
   mutate(houseNum = strsplit(houseNums, ',')) %>%
   unnest(houseNum) %>% 
@@ -204,10 +213,12 @@ expanded <- pad %>%
   unnest(lgc) %>%
   inner_join(snd, by=c('boro', 'sc5', 'lgc'))
 
-# Type Distribution
+# Debugging messages about type distribution
 pad %>% group_by(rowType) %>% summarise(count = length(rowType)) %>% print
 expanded %>% group_by(rowType) %>% summarise(count = length(rowType)) %>% print
 
+"SELECTING RELEVANT COLUMNS FOR EXPORT" %>% print
+# Simply selects only needed columns in the output.
 expanded <- expanded %>%
   select(bbl, houseNum, stname = alt_st_name, zipcode, lng, lat)
 
