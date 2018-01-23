@@ -9,27 +9,21 @@ numericType <- function(from, to) {
 }
 
 hyphenNoSuffix <- function(lNumeric, rNumeric, lDashNumeric, rDashNumeric) {
-  # handle same length before and after hyphen, and lowbefore == highbefore
-  if (lNumeric == rNumeric) {
-    # generate numerical sequence
-    sequence <- seq(lNumeric, rNumeric, 2);
-    
+    houseNumSeq <- seq(lNumeric, rNumeric, 2);
+
     # convert numbers to strings for non-hyphenated housenums
-    noHyphens <- paste(sequence)
-    
+    noHyphens <- paste(houseNumSeq)
+
     # add the hyphen in the original position
-    hyphens <- paste(
-      str_sub(sequence, 1, nchar(lDashNumeric)), 
-      '-', 
-      str_sub(sequence, -nchar(rDashNumeric)),
+    hyphenated <- paste(
+      str_sub(houseNumSeq, 1, nchar(parse_character(lDashNumeric))),
+      '-',
+      str_sub(houseNumSeq, nchar(parse_character(lDashNumeric)) + 1, -1),
       sep = ""
     );
-    
-    combined <- paste(c(hyphens, noHyphens), collapse=',');
+
+    combined <- paste(c(hyphenated, noHyphens), collapse=',');
     return(combined);
-  }
-  
-  return(NA);
 }
 
 hyphenSuffix <- function(lhnd, hhnd) {
@@ -59,7 +53,7 @@ hyphenSuffix <- function(lhnd, hhnd) {
       characterMap %>% filter(values == str_extract(lhnd, '[A-Z]') %>% unlist) %>% select(keys) %>% unlist,
       characterMap %>% filter(values == str_extract(hhnd, '[A-Z]') %>% unlist) %>% select(keys) %>% unlist
     )
-    ]
+  ]
   
   noHyphenAndSuffix <- paste(expand.grid(a = noHyphens, b = suffices) %>% unite(c,a,b, sep=""), collapse=',') ;
   hyphenAndSuffix <- paste(expand.grid(a = hyphens, b = suffices) %>% unite(c,a,b, sep=""), collapse = ',');
@@ -68,3 +62,48 @@ hyphenSuffix <- function(lhnd, hhnd) {
   
   return(combined)
 }
+
+# Sample data with PAD data frame in the environment
+# padSample <- pad[sample(nrow(pad), nrow(pad) * 0.1), ]
+# # padSample <- padSample %>% filter(rowType == 'hyphenNoSuffix')
+# padSample <- padSample %>% select(starts_with('lhns'), starts_with('hhns'), starts_with('lhnd'), starts_with('hhnd'), rowType)
+# 
+# padSample <- padSample %>%
+#   mutate(
+#     houseNums = apply(
+#       padSample,
+#       1,
+#       function(x) {
+#         if (x['rowType'] == 'nonAddressable') {
+#           return(NA)
+#         }
+# 
+#         if (x['rowType'] == 'singleAddress') {
+#           return(singleAddress(x['lhnd']))
+#         }
+# 
+#         if (x['rowType'] == 'numericType') {
+#           return(numericType(x['lhns_ldash_i'], x['hhns_ldash_i']))
+#         }
+# 
+#         if (x['rowType'] == 'hyphenNoSuffix') {
+#           return(
+#             hyphenNoSuffix(
+#               x['lhns_numeric'],
+#               x['hhns_numeric'],
+#               x['lhns_ldash_i'],
+#               x['lhns_rdash_i']
+#             )
+#           )
+#         }
+# 
+#         if (x['rowType'] == 'hyphenSuffix') {
+#           return(hyphenSuffix(x['lhnd'], x['hhnd']))
+#         }
+# 
+#         if(x['rowType'] == 'noHyphenSuffix') {
+#           return()
+#         }
+#       }
+#     )
+#   )

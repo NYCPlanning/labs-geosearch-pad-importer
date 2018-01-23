@@ -47,8 +47,8 @@ pad <- pad %>%
   unite(bbl, boro, block, lot, sep="", remove=FALSE)
 
 pad <- pad %>%
-  separate(lhns, c('lhns_dash', 'lhns_ldash', 'lhns_rdash', 'lhns_suffix'), sep=c(1,6,9), remove=FALSE, convert=TRUE) %>%
-  separate(hhns, c('hhns_dash', 'hhns_ldash', 'hhns_rdash', 'hhns_suffix'), sep=c(1,6,9), remove=FALSE, convert=TRUE) %>%
+  separate(lhns, c('lhns_dash', 'lhns_ldash', 'lhns_rdash', 'lhns_suffix'), sep=c(1,6,9), remove=FALSE) %>%
+  separate(hhns, c('hhns_dash', 'hhns_ldash', 'hhns_rdash', 'hhns_suffix'), sep=c(1,6,9), remove=FALSE) %>%
   mutate(lhns_dash = parse_logical(lhns_dash)) %>%
   mutate(hhns_dash = parse_logical(hhns_dash)) %>%
   left_join(suffix_lookup, by=c('lhns_suffix' = 'code')) %>%
@@ -77,17 +77,15 @@ pad <- pad %>%
   mutate(hhns_rdash_i = parse_integer(hhns_rdash))
 
 pad <- pad %>%
-  unite('lhns_numeric', c('lhns_ldash_i', 'lhns_rdash_i'), sep="", remove=FALSE) %>%
   mutate(
-    lhns_numeric = parse_integer(lhns_numeric),
+    lhns_numeric = parse_integer(str_replace(lhnd, '\\D+', '')),
     lhns_ldash_i = parse_integer(lhns_ldash_i),
     lhns_rdash_i = parse_integer(lhns_rdash_i)
   )
 
 pad <- pad %>%
-  unite('hhns_numeric', c('hhns_ldash_i', 'hhns_rdash_i'), sep="", remove=FALSE) %>%
   mutate(
-    hhns_numeric = parse_integer(hhns_numeric),
+    hhns_numeric = parse_integer(str_replace(hhnd, '\\D+', '')),
     hhns_ldash_i = parse_integer(hhns_ldash_i),
     hhns_rdash_i = parse_integer(hhns_rdash_i)
   )
@@ -117,7 +115,7 @@ pad <- pad %>%
       lhns == hhns                                                                          ~ 'singleAddress',
       addrtype == 'G' | addrtype == 'N' | addrtype == 'X'                                   ~ 'nonAddressable',
       lhns_dash == FALSE & is.na(lhns_suffix) & is.na(hhns_suffix)                          ~ 'numericType',
-      lhns_dash == TRUE & lhnd != hhnd & is.na(lhns_suffix)                                 ~ 'hyphenNoSuffix',
+      lhns_dash == TRUE & lhnd != hhnd & is.na(lhns_suffix) & is.na(hhns_suffix)            ~ 'hyphenNoSuffix',
       lhns_dash == FALSE & lhns_suffix %in% LETTERS                                         ~ 'noHyphenSuffix',
       lhns_dash == TRUE & lhns_suffix %in% LETTERS  &
         lhns_dash == TRUE & hhns_suffix %in% LETTERS                                        ~ 'hyphenSuffix'
@@ -160,11 +158,14 @@ pad <- pad %>%
         if (x['rowType'] == 'hyphenSuffix') {
           return(hyphenSuffix(x['lhnd'], x['hhnd']))
         }
-
+        
         return(NA)
       }
     )
   )
+
+"CHECKING EXPANSION COLUMN FOR NON-NULL/NON-NA TYPES: " %>% print
+pad %>% distinct(typeof(houseNums)) %>% print
 
 "EXPANDING" %>% print
 expanded <- pad %>% 
