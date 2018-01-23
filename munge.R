@@ -130,8 +130,16 @@ pad <- pad %>%
 pad <- pad %>%
   replace_na(list(addrtype = 'OTHER', validlgcs = ''))
 
+<<<<<<< Updated upstream
 "FILTERING ROWS" %>% print
 # W, F, B adresses types are filtered out because they are not useful in a geocoder
+=======
+# remove white space in street name column
+pad <- pad %>% 
+  mutate(stname = gsub("\\s+", " ", stname))
+
+"FILTER W, F, B addrtypes" %>% print
+>>>>>>> Stashed changes
 pad <- pad %>%
   filter(addrtype != 'W' & addrtype != 'F' & addrtype != 'B')
 
