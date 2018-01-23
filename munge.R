@@ -2,14 +2,21 @@ library(downloader)
 library(tidyverse)
 
 source <- "https://www1.nyc.gov/assets/planning/download/zip/data-maps/open-data/pad17d.zip"
-centroids <- "https://planninglabs.carto.com/api/v2/sql?q=SELECT%20bbl,%20Round(ST_X(ST_Centroid(the_geom))::numeric,5)%20AS%20lng,%20Round(ST_Y(ST_Centroid(the_geom))::numeric,5)%20AS%20lat%20FROM%20support_mappluto&format=csv&filename=mappluto_centroids"
+bblcentroids <- "https://planninglabs.carto.com/api/v2/sql?q=SELECT%20bbl,%20Round(ST_X(ST_Centroid(the_geom))::numeric,5)%20AS%20lng,%20Round(ST_Y(ST_Centroid(the_geom))::numeric,5)%20AS%20lat%20FROM%20support_mappluto&format=csv"
+bincentroids <- "https://planninglabs.carto.com/api/v2/sql?q=SELECT%20bin%3A%3Atext%2C%20Round%28ST_X%28ST_Centroid%28the_geom%29%29%3A%3Anumeric%2C5%29%20AS%20lng%2C%20Round%28ST_Y%28ST_Centroid%28the_geom%29%29%3A%3Anumeric%2C5%29%20AS%20lat%20FROM%20planninglabs.building_footprints&format=csv"
+
 
 download(source, dest="data/dataset.zip", mode="wb") 
-download(centroids, dest="data/centroids.csv", mode="wb")
+download(bblcentroids, dest="data/bblcentroids.csv", mode="wb")
+download(bincentroids, dest="data/bincentroids.csv", mode="wb")
+
 unzip("data/dataset.zip", exdir = "./data")
 
 "LOADING DATA" %>% print
-padRaw <- read_csv('data/bobaadr.txt')
+padRaw <- read_csv('data/bobaadr.txt',
+ col_types = cols(
+   bin = col_character()
+ ))
 
 bbl <- read_csv('data/bobabbl.txt') %>%
   select(boro, block, lot, billboro, billblock, billlot)
@@ -23,12 +30,21 @@ snd <- read_fwf(
   skip = 1) %>%
   select(boro, sc5, lgc, alt_st_name = stname, full_stname, primary_flag, principal_flag)
 
-centroids <- read_csv(
-  'data/centroids.csv',
+bblcentroids <- read_csv(
+  'data/bblcentroids.csv',
   col_types = cols(
     bbl = col_character()
   )
-)
+)  %>%
+  distinct(bbl, .keep_all=TRUE)
+
+bincentroids <- read_csv(
+  'data/bincentroids.csv',
+  col_types = cols(
+    bin = col_character()
+  )
+) %>%
+  distinct(bin, .keep_all=TRUE)
 
 "CLEANING DATA" %>% print
 pad <- padRaw %>%
@@ -48,8 +64,21 @@ pad <- pad %>%
     )
   )
 
+# join on bin(pluto) and bbl(building footprint) lookups to get lat and lng,
+# if bin lookup does not get a a lat/lng, use the bbl lookup values, else NA
 pad <- pad %>%
-  left_join(centroids, by = 'bbl')
+  left_join(bincentroids, by = 'bin') %>%
+  left_join(bblcentroids, by = 'bbl') %>%
+  mutate(
+    lat = case_when(
+      is.na(lat.x) & is.na(lat.y)   ~ lat.y,
+      TRUE            ~ lat.x
+    ),
+    lng = case_when(
+      is.na(lat.x) & is.na(lat.y)   ~ lng.y,
+      TRUE            ~ lng.x
+    )
+  )
 
 pad <- pad %>%
   replace_na(list(addrtype = 'OTHER', validlgcs = ''))
