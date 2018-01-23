@@ -1,6 +1,8 @@
 library(downloader)
 library(tidyverse)
 
+source('_functions.R')
+
 source <- "https://www1.nyc.gov/assets/planning/download/zip/data-maps/open-data/pad17d.zip"
 centroids <- "https://planninglabs.carto.com/api/v2/sql?q=SELECT%20bbl,%20Round(ST_X(ST_Centroid(the_geom))::numeric,5)%20AS%20lng,%20Round(ST_Y(ST_Centroid(the_geom))::numeric,5)%20AS%20lat%20FROM%20support_mappluto&format=csv&filename=mappluto_centroids"
 
@@ -30,6 +32,10 @@ centroids <- read_csv(
   )
 )
 
+suffix_lookup <- read_csv(
+  'suffix_lookup.csv'
+)
+
 "CLEANING DATA" %>% print
 pad <- padRaw %>%
   left_join(bbl, by = c('boro', 'block', 'lot'))
@@ -39,6 +45,52 @@ pad <- pad %>%
 
 pad <- pad %>%
   unite(bbl, boro, block, lot, sep="", remove=FALSE)
+
+pad <- pad %>%
+  separate(lhns, c('lhns_dash', 'lhns_ldash', 'lhns_rdash', 'lhns_suffix'), sep=c(1,6,9), remove=FALSE, convert=TRUE) %>%
+  separate(hhns, c('hhns_dash', 'hhns_ldash', 'hhns_rdash', 'hhns_suffix'), sep=c(1,6,9), remove=FALSE, convert=TRUE) %>%
+  mutate(lhns_dash = parse_logical(lhns_dash)) %>%
+  mutate(hhns_dash = parse_logical(hhns_dash)) %>%
+  left_join(suffix_lookup, by=c('lhns_suffix' = 'code')) %>%
+  mutate(lhns_suffix = suffix) %>%
+  left_join(suffix_lookup, by=c('hhns_suffix' = 'code'), suffix=c('l','h')) %>%
+  mutate(hhns_suffix = suffixh)
+
+pad <- pad %>%
+  mutate(
+    lhns_rdash = case_when(
+      (lhns_dash == TRUE) ~ lhns_rdash
+    )
+  )
+
+pad <- pad %>%
+  mutate(
+    hhns_rdash = case_when(
+      (hhns_dash == TRUE) ~ hhns_rdash
+    )
+  )
+
+pad <- pad %>%
+  mutate(lhns_ldash_i = parse_integer(lhns_ldash)) %>%
+  mutate(lhns_rdash_i = parse_integer(lhns_rdash)) %>%
+  mutate(hhns_ldash_i = parse_integer(hhns_ldash)) %>%
+  mutate(hhns_rdash_i = parse_integer(hhns_rdash))
+
+pad <- pad %>%
+  unite('lhns_numeric', c('lhns_ldash_i', 'lhns_rdash_i'), sep="", remove=FALSE) %>%
+  mutate(
+    lhns_numeric = parse_integer(lhns_numeric),
+    lhns_ldash_i = parse_integer(lhns_ldash_i),
+    lhns_rdash_i = parse_integer(lhns_rdash_i)
+  )
+
+pad <- pad %>%
+  unite('hhns_numeric', c('hhns_ldash_i', 'hhns_rdash_i'), sep="", remove=FALSE) %>%
+  mutate(
+    hhns_numeric = parse_integer(hhns_numeric),
+    hhns_ldash_i = parse_integer(hhns_ldash_i),
+    hhns_rdash_i = parse_integer(hhns_rdash_i)
+  )
 
 pad <- pad %>%
   mutate(
@@ -64,11 +116,11 @@ pad <- pad %>%
     rowType = case_when(
       lhns == hhns                                                                          ~ 'singleAddress',
       addrtype == 'G' | addrtype == 'N' | addrtype == 'X'                                   ~ 'nonAddressable',
-      grepl("^0", lhns) & grepl("^0", hhns) & grepl("000AA$", lhns) & grepl("000AA$", hhns) ~ 'numericType',
-      str_sub(lhns, 1, 1) == "1" & lhnd != hhnd & str_sub(lhns, 10, 11) == "AA"             ~ 'hyphenNoSuffix',
-      str_sub(lhns, 1, 1) == "0" & str_sub(lhns, 10, 10) %in% c("M","N","O")                ~ 'nohyphenSuffix',
-      str_sub(lhns, 1, 1) == "1" & str_sub(lhns, 10, 10) %in% c('M', 'N', 'O')  &
-        str_sub(hhns, 1, 1) == "1" & str_sub(hhns, 10, 10) %in% c('M', 'N', 'O')            ~ 'hyphenSuffix'
+      lhns_dash == FALSE & is.na(lhns_suffix) & is.na(hhns_suffix)                          ~ 'numericType',
+      lhns_dash == TRUE & lhnd != hhnd & is.na(lhns_suffix)                                 ~ 'hyphenNoSuffix',
+      lhns_dash == FALSE & lhns_suffix %in% LETTERS                                         ~ 'noHyphenSuffix',
+      lhns_dash == TRUE & lhns_suffix %in% LETTERS  &
+        lhns_dash == TRUE & hhns_suffix %in% LETTERS                                        ~ 'hyphenSuffix'
     )
   )
 
@@ -76,8 +128,6 @@ pad <- pad %>%
   filter(!is.na(rowType))
 
 "SEQUENCING" %>% print
-characterMap <- tibble(keys = seq(1, length(LETTERS)), values = LETTERS)
-
 pad <- pad %>%
   mutate(
     houseNums = apply(
@@ -87,94 +137,30 @@ pad <- pad %>%
         if (x['rowType'] == 'nonAddressable') {
           return(NA)
         }
-        
+
         if (x['rowType'] == 'singleAddress') {
-          return(x['lhnd'])
+          return(singleAddress(x['lhnd']))
         }
-        
+
         if (x['rowType'] == 'numericType') {
-          return(paste(seq(x['lhnd'], x['hhnd'], 2), collapse=','))
+          return(numericType(x['lhns_ldash_i'], x['hhns_ldash_i']))
         }
-        
+
         if (x['rowType'] == 'hyphenNoSuffix') {
-          
-          lowBefore <- str_split(x['lhnd'],'-')[[1]][1];
-          lowAfter <- str_split(x['lhnd'],'-')[[1]][2];
-          highBefore <- str_split(x['hhnd'],'-')[[1]][1];
-          highAfter <- str_split(x['hhnd'],'-')[[1]][2];
-          
-          # handle same length before and after hyphen, and lowbefore == highbefore
-          if ((lowBefore == highBefore) && (nchar(lowAfter) == nchar(highAfter))) {
-            # remove hyphen
-            lowCombined <- gsub("-", "", x['lhnd'])
-            highCombined <- gsub("-", "", x['hhnd'])
-            
-            # generate numerical sequence
-            sequence <- seq(
-              parse_number(
-                unlist(lowCombined)
-              ),
-              parse_number(
-                unlist(highCombined)
-              ),
-              2
-            );
-            
-            # convert numbers to strings for non-hyphenated housenums
-            noHyphens <- paste(sequence)
-            
-            # add the hyphen in the original position
-            hyphens <- paste(
-              str_sub(sequence, 1, nchar(lowBefore)), 
-              '-', 
-              str_sub(sequence, -nchar(lowAfter)),
-              sep = ""
-            );
-     
-            combined <- paste(c(hyphens, noHyphens), collapse=',');
-            return(combined);
-          }
-          
-          return(NA);
+          return(
+            hyphenNoSuffix(
+              x['lhns_numeric'],
+              x['hhns_numeric'],
+              x['lhns_ldash_i'],
+              x['lhns_rdash_i']
+            )
+          )
         }
 
         if (x['rowType'] == 'hyphenSuffix') {
-          lowBefore <- str_split(x['lhnd'],'-')[[1]][1];
-          lowAfter <- paste(str_extract_all(str_split(x['lhnd'],'-')[[1]][2], '[0-9]')[[1]], collapse="");
-          highBefore <- str_split(x['hhnd'],'-')[[1]][1];
-          highAfter <-  paste(str_extract_all(str_split(x['hhnd'],'-')[[1]][2], '[0-9]')[[1]], collapse="");
-
-          sequence <- seq(
-            str_extract_all(x['lhnd'], '[0-9]') %>% unlist %>% paste(collapse="") %>% parse_number,
-            str_extract_all(x['hhnd'], '[0-9]') %>% unlist %>% paste(collapse="") %>% parse_number,
-            2
-          )
-          
-          noHyphens = paste(sequence);
-          
-          hyphens <- paste(
-            str_sub(sequence, 1, nchar(lowBefore)), 
-            '-', 
-            str_sub(sequence, -nchar(lowAfter)),
-            sep = ""
-          );
-          
-          
-          suffices <- LETTERS[
-            seq(
-              characterMap %>% filter(values == str_extract(x['lhnd'], '[A-Z]') %>% unlist) %>% select(keys) %>% unlist,
-              characterMap %>% filter(values == str_extract(x['hhnd'], '[A-Z]') %>% unlist) %>% select(keys) %>% unlist
-            )
-          ]
-          
-          noHyphenAndSuffix <- paste(expand.grid(a = noHyphens, b = suffices) %>% unite(c,a,b, sep=""), collapse=',') ;
-          hyphenAndSuffix <- paste(expand.grid(a = hyphens, b = suffices) %>% unite(c,a,b, sep=""), collapse = ',');
-    
-          combined <- paste(c(noHyphenAndSuffix, hyphenAndSuffix), collapse=',')
-          
-          return(combined)
+          return(hyphenSuffix(x['lhnd'], x['hhnd']))
         }
-        
+
         return(NA)
       }
     )
