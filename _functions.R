@@ -46,8 +46,8 @@ hyphenSuffix <- function(lowNumeric, highNumeric, lowSuffix, highSuffix, lhyphen
     )
   ]
   
-  noHyphenAndSuffix <- paste(expand.grid(a = noHyphens, b = suffices) %>% unite(c,a,b, sep=""), collapse=',')
-  hyphenAndSuffix <- paste(expand.grid(a = hyphenated, b = suffices) %>% unite(c,a,b, sep=""), collapse = ',')
+  noHyphenAndSuffix <- paste(expand.grid(a = noHyphens, b = suffices) %>% unite(c,a,b, sep="") %>% unlist, collapse=',')
+  hyphenAndSuffix <- paste(expand.grid(a = hyphenated, b = suffices) %>% unite(c,a,b, sep="") %>% unlist, collapse = ',')
   
   combined <- paste(c(noHyphenAndSuffix, hyphenAndSuffix), collapse=',')
   
@@ -64,13 +64,13 @@ noHyphenSuffix <- function(from, to, lowSuffix, highSuffix) {
     )
   ]
   
-  productOfSequences <- paste(expand.grid(a = houseNumbers, b = suffices) %>% unite(c,a,b, sep=""), collapse=',')
+  productOfSequences <- paste(expand.grid(a = houseNumbers, b = suffices) %>% unite(c,a,b, sep="") %>% unlist, collapse=',')
   return(productOfSequences)
 }
 
 # Sample data with PAD data frame in the environment
-# padSample <- pad[sample(nrow(pad), nrow(pad) * 1), ]
-# # padSample <- padSample %>% filter(rowType == 'hyphenSuffix')
+# padSample <- pad[sample(nrow(pad), nrow(pad) * 0.1), ]
+# padSample <- padSample %>% filter(rowType == 'hyphenSuffix')
 # padSample <- padSample %>% select(starts_with('lhns'), starts_with('hhns'), starts_with('lhnd'), starts_with('hhnd'), rowType)
 # 
 # padSample <- padSample %>%
