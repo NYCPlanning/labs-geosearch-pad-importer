@@ -7,7 +7,6 @@ source <- "https://www1.nyc.gov/assets/planning/download/zip/data-maps/open-data
 bblcentroids <- "https://planninglabs.carto.com/api/v2/sql?q=SELECT%20bbl,%20Round(ST_X(ST_Centroid(the_geom))::numeric,5)%20AS%20lng,%20Round(ST_Y(ST_Centroid(the_geom))::numeric,5)%20AS%20lat%20FROM%20support_mappluto&format=csv"
 bincentroids <- "https://planninglabs.carto.com/api/v2/sql?q=SELECT%20bin%3A%3Atext%2C%20Round%28ST_X%28ST_Centroid%28the_geom%29%29%3A%3Anumeric%2C5%29%20AS%20lng%2C%20Round%28ST_Y%28ST_Centroid%28the_geom%29%29%3A%3Anumeric%2C5%29%20AS%20lat%20FROM%20planninglabs.building_footprints&format=csv"
 
-
 download(source, dest="data/dataset.zip", mode="wb") 
 download(bblcentroids, dest="data/bblcentroids.csv", mode="wb")
 download(bincentroids, dest="data/bincentroids.csv", mode="wb")
@@ -81,7 +80,12 @@ pad <- pad %>%
   left_join(suffix_lookup, by=c('lhns_suffix' = 'code')) %>%
   mutate(lhns_suffix = suffix) %>%
   left_join(suffix_lookup, by=c('hhns_suffix' = 'code'), suffix=c('l','h')) %>%
-  mutate(hhns_suffix = suffixh) %>%
+  mutate(
+    hhns_suffix = case_when(
+      is.na(suffixh) ~ suffixl,
+      TRUE           ~ suffixh
+    )
+  ) %>%
   mutate(
     lhns_rhyphen = case_when(
       (lhns_hyphen == TRUE) ~ lhns_rhyphen
@@ -143,8 +147,8 @@ pad <- pad %>%
 pad <- pad %>%
   mutate(
     rowType = case_when(
-      lhns == hhns                                                                          ~ 'singleAddress',
-      addrtype == 'G' | addrtype == 'N' | addrtype == 'X'                                   ~ 'nonAddressable',
+      lhns == hhns                                                                            ~ 'singleAddress',
+      addrtype == 'G' | addrtype == 'N' | addrtype == 'X'                                     ~ 'nonAddressable',
       lhns_hyphen == FALSE & is.na(lhns_suffix) & is.na(hhns_suffix)                          ~ 'numericType',
       lhns_hyphen == TRUE & lhnd != hhnd & is.na(lhns_suffix) & is.na(hhns_suffix)            ~ 'hyphenNoSuffix',
       lhns_hyphen == FALSE & lhns_suffix %in% LETTERS                                         ~ 'noHyphenSuffix',
@@ -164,6 +168,7 @@ pad <- pad %>%
       pad,
       1,
       function(x) {
+        print(paste(x['rowType']))
         if (x['rowType'] == 'nonAddressable') {
           return(NA)
         }
@@ -189,6 +194,17 @@ pad <- pad %>%
 
         if (x['rowType'] == 'hyphenSuffix') {
           return(hyphenSuffix(x['lhnd'], x['hhnd']))
+        }
+        
+        if(x['rowType'] == 'noHyphenSuffix') {
+          return(
+            noHyphenSuffix(
+              x['lhns_numeric'],
+              x['hhns_numeric'],
+              x['lhns_suffix'],
+              x['hhns_suffix']
+            )
+          )
         }
         
         return(NA)
