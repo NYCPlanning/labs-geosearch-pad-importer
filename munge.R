@@ -101,12 +101,12 @@ pad <- pad %>%
   mutate(hhns_lhyphen_i = parse_integer(hhns_lhyphen)) %>%
   mutate(hhns_rhyphen_i = parse_integer(hhns_rhyphen)) %>%
   mutate(
-    lhns_numeric = parse_integer(str_replace(lhnd, '\\D+', '')),
+    lhns_numeric = parse_integer(str_replace_all(lhnd, '\\D+', '')),
     lhns_lhyphen_i = parse_integer(lhns_lhyphen_i),
     lhns_rhyphen_i = parse_integer(lhns_rhyphen_i)
   ) %>%
   mutate(
-    hhns_numeric = parse_integer(str_replace(hhnd, '\\D+', '')),
+    hhns_numeric = parse_integer(str_replace_all(hhnd, '\\D+', '')),
     hhns_lhyphen_i = parse_integer(hhns_lhyphen_i),
     hhns_rhyphen_i = parse_integer(hhns_rhyphen_i)
   )
@@ -168,7 +168,6 @@ pad <- pad %>%
       pad,
       1,
       function(x) {
-        print(paste(x['rowType']))
         if (x['rowType'] == 'nonAddressable') {
           return(NA)
         }
@@ -198,7 +197,15 @@ pad <- pad %>%
         }
 
         if (x['rowType'] == 'hyphenSuffix') {
-          return(hyphenSuffix(x['lhnd'], x['hhnd']))
+          return(
+            hyphenSuffix(
+              x['lhns_numeric'],
+              x['hhns_numeric'],
+              x['lhns_suffix'],
+              x['hhns_suffix'],
+              x['lhns_lhyphen_i']
+            )
+          )
         }
         
         if(x['rowType'] == 'noHyphenSuffix') {
