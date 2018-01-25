@@ -263,16 +263,28 @@ expanded <- expanded %>%
 # 1. theoretical unnest count matches actual row count
 # 2. check for NAs in crucial columns (stname, lat, lng, bbl)
 "RUNNING CHECKS" %>% print
-expanded %>% filter(is.na(lat)) %>% nrow %>% ifelse(., paste("✗ WARNING!", ., "MISSING LATITUDES"), "✓ LATITUDES") %>% print
-expanded %>% filter(is.na(lng)) %>% nrow %>% ifelse(., paste("✗ WARNING!", ., "MISSING LONGITUDES"), "✓ LONGITUDES") %>% print
-expanded %>% filter(is.na(pad_bbl)) %>% nrow %>% ifelse(., paste("✗ WARNING!", ., "MISSING BBLS"), "✓ BBLS") %>% print
-expanded %>% filter(is.na(stname)) %>% nrow %>% ifelse(., paste("✗ WARNING!", ., "MISSING STNAMES"), "✓ STNAMES") %>% print
-expanded %>% filter(is.na(zipcode)) %>% nrow %>% ifelse(., paste("✗ WARNING!", ., "MISSING ZIPCODES"), "✓ ZIPCODES") %>% print
-expanded %>% nrow %>% paste("TOTAL ROWS:", .) %>% print
-expanded %>% distinct %>% nrow %>% paste("DISTINCT ROWS:",.) %>% print
+checks <- list(
+  missing_lats = expanded %>% filter(is.na(lat)) %>% nrow,
+  missing_lngs = expanded %>% filter(is.na(lng)) %>% nrow,
+  missing_bbls = expanded %>% filter(is.na(pad_bbl)) %>% nrow,
+  missing_stnames = expanded %>% filter(is.na(stname)) %>% nrow,
+  missing_zips = expanded %>% filter(is.na(zipcode)) %>% nrow,
+  total_rows = expanded %>% nrow,
+  distinct_rows = expanded %>% distinct %>% nrow
+)
+
+checks$missing_lats %>% ifelse(., paste("✗ WARNING!", ., "MISSING LATITUDES"), "✓ LATITUDES") %>% print
+checks$missing_lngs %>% ifelse(., paste("✗ WARNING!", ., "MISSING LONGITUDES"), "✓ LONGITUDES") %>% print
+checks$missing_bbls %>% ifelse(., paste("✗ WARNING!", ., "MISSING BBLS"), "✓ BBLS") %>% print
+checks$missing_stnames %>% ifelse(., paste("✗ WARNING!", ., "MISSING STNAMES"), "✓ STNAMES") %>% print
+checks$missing_zips %>% ifelse(., paste("✗ WARNING!", ., "MISSING ZIPCODES"), "✓ ZIPCODES") %>% print
+checks$total_rows %>% paste("TOTAL ROWS:", .) %>% print
+checks$distinct_rows %>% paste("DISTINCT ROWS:",.) %>% print
 
 "WRITING" %>% print
 write_csv(expanded, 'data/labs-geosearch-pad-normalized.csv', na="")
 write_csv(expanded[sample(nrow(expanded), nrow(expanded) * 0.1), ], 'data/labs-geosearch-pad-normalized-sample-lg.csv', na="")
 write_csv(expanded[sample(nrow(expanded), nrow(expanded) * 0.05), ], 'data/labs-geosearch-pad-normalized-sample-md.csv', na="")
 write_csv(expanded[sample(nrow(expanded), nrow(expanded) * 0.01), ], 'data/labs-geosearch-pad-normalized-sample-sm.csv', na="")
+file.rename('data/labs-geosearch-pad-checks-latest.json', paste(c('data/labs-geosearch-pad-checks-',print(as.integer(Sys.time())*1000, digits=15), '.json'), collapse=""))
+write(toJSON(checks), 'data/labs-geosearch-pad-checks-latest.json')
