@@ -36,21 +36,22 @@ snd <- read_fwf(
 
 # Read BBL centroids data, make them distinct on the BBL key
 bblcentroids <- read_csv(
-  'data/bblcentroids.csv',
-  col_types = cols(
-    bbl = col_character()
-  )
-)  %>%
+    'data/bblcentroids.csv',
+    col_types = cols(
+      bbl = col_character()
+    )
+  )  %>%
   distinct(bbl, .keep_all=TRUE)
 
 # Read BIN centroids data, make them distinct on the BIN key
 bincentroids <- read_csv(
-  'data/bincentroids.csv',
-  col_types = cols(
-    bin = col_character()
-  )
-) %>%
-  distinct(bin, .keep_all=TRUE)
+    'data/bincentroids.csv',
+    col_types = cols(
+      bin = col_character()
+    )
+  ) %>%
+  distinct(bin, .keep_all=TRUE) %>%
+  filter(!grepl('^[1-5]0{6}$', bin))
 
 # Read suffix lookup table to join on position-separated suffix code
 suffix_lookup <- read_csv(
@@ -255,7 +256,7 @@ expanded %>% group_by(rowType) %>% summarise(count = length(rowType)) %>% print
 "SELECTING RELEVANT COLUMNS FOR EXPORT" %>% print
 # Simply selects only needed columns in the output.
 expanded <- expanded %>%
-  select(bbl, houseNum, orig_stname = stname, pad_low = lhnd, pad_high = hhnd, stname = alt_st_name, zipcode, lng, lat) %>%
+  select(pad_bbl = bbl, houseNum, pad_bin = bin, pad_orig_stname = stname, pad_low = lhnd, pad_high = hhnd, stname = alt_st_name, zipcode, lng, lat) %>%
   filter(!is.na(lat) & !is.na(lng))
 
 # Checks:
@@ -264,7 +265,7 @@ expanded <- expanded %>%
 "RUNNING CHECKS" %>% print
 expanded %>% filter(is.na(lat)) %>% nrow %>% ifelse(., paste("✗ WARNING!", ., "MISSING LATITUDES"), "✓ LATITUDES") %>% print
 expanded %>% filter(is.na(lng)) %>% nrow %>% ifelse(., paste("✗ WARNING!", ., "MISSING LONGITUDES"), "✓ LONGITUDES") %>% print
-expanded %>% filter(is.na(bbl)) %>% nrow %>% ifelse(., paste("✗ WARNING!", ., "MISSING BBLS"), "✓ BBLS") %>% print
+expanded %>% filter(is.na(pad_bbl)) %>% nrow %>% ifelse(., paste("✗ WARNING!", ., "MISSING BBLS"), "✓ BBLS") %>% print
 expanded %>% filter(is.na(stname)) %>% nrow %>% ifelse(., paste("✗ WARNING!", ., "MISSING STNAMES"), "✓ STNAMES") %>% print
 expanded %>% filter(is.na(zipcode)) %>% nrow %>% ifelse(., paste("✗ WARNING!", ., "MISSING ZIPCODES"), "✓ ZIPCODES") %>% print
 expanded %>% nrow %>% paste("TOTAL ROWS:", .) %>% print
