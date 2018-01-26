@@ -34,6 +34,11 @@ snd <- read_fwf(
   skip = 1) %>%
   select(boro, sc5, lgc, alt_st_name = stname, full_stname, primary_flag, principal_flag)
 
+# clear whitespace from alternate streetnames
+snd <- snd %>%
+  mutate(stname = str_trim(gsub("\\s+", " ", stname))) %>%
+  mutate(full_stname = str_trim(gsub("\\s+", " ", full_stname)))
+
 # Read BBL centroids data, make them distinct on the BBL key
 bblcentroids <- read_csv(
     'data/bblcentroids.csv',
@@ -119,11 +124,11 @@ pad <- pad %>%
   left_join(bblcentroids, by = 'bbl') %>%
   mutate(
     lat = case_when(
-      is.na(lat.x) & is.na(lat.y)   ~ lat.y,
+      is.na(lat.x) & is.na(lng.x)   ~ lat.y,
       TRUE                          ~ lat.x
     ),
     lng = case_when(
-      is.na(lat.x) & is.na(lat.y)   ~ lng.y,
+      is.na(lat.x) & is.na(lng.x)   ~ lng.y,
       TRUE                          ~ lng.x
     )
   )
