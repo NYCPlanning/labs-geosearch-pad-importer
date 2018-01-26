@@ -37,7 +37,7 @@ snd <- read_fwf(
 
 # clear whitespace from alternate streetnames
 snd <- snd %>%
-  mutate(stname = str_trim(gsub("\\s+", " ", stname))) %>%
+  mutate(alt_st_name = str_trim(gsub("\\s+", " ", alt_st_name))) %>%
   mutate(full_stname = str_trim(gsub("\\s+", " ", full_stname)))
 
 # Read BBL centroids data, make them distinct on the BBL key
