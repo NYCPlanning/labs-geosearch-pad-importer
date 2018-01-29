@@ -1,14 +1,70 @@
 characterMap <- tibble(keys = seq(1, length(LETTERS)), values = LETTERS)
 
-singleAddress <- function(display) {
+delegate <- cmpfun(function(x) {
+  if (x['rowType'] == 'nonAddressable') {
+    return(NA)
+  }
+  
+  if (x['rowType'] == 'singleAddress') {
+    # if no hyphen, return lhnd, else return both lhnd and lhnd with the hyphen removed
+    if (grepl('-', x['lhnd'])) {
+      noHyphenlhnd <- gsub("-", "", x['lhnd'])
+      return(paste(x['lhnd'], noHyphenlhnd, sep=','))
+    }
+    return(x['lhnd'])
+  }
+  
+  if (x['rowType'] == 'numericType') {
+    return(numericType(x['lhns_lhyphen_i'], x['hhns_lhyphen_i']))
+  }
+  
+  if (x['rowType'] == 'hyphenNoSuffix') {
+    return(
+      hyphenNoSuffix(
+        x['lhns_numeric'],
+        x['hhns_numeric'],
+        x['lhns_lhyphen_i'],
+        x['lhns_rhyphen_i']
+      )
+    )
+  }
+  
+  if (x['rowType'] == 'hyphenSuffix') {
+    return(
+      hyphenSuffix(
+        x['lhns_numeric'],
+        x['hhns_numeric'],
+        x['lhns_suffix'],
+        x['hhns_suffix'],
+        x['lhns_lhyphen_i']
+      )
+    )
+  }
+  
+  if(x['rowType'] == 'noHyphenSuffix') {
+    return(
+      noHyphenSuffix(
+        x['lhns_numeric'],
+        x['hhns_numeric'],
+        x['lhns_suffix'],
+        x['hhns_suffix']
+      )
+    )
+  }
+  
+  return(NA)
+})
+
+
+singleAddress <- cmpfun(function(display) {
   return(display)
-}
+})
 
-numericType <- function(from, to) {
+numericType <- cmpfun(function(from, to) {
   return(paste(seq(from, to, 2), collapse=','))
-}
+})
 
-hyphenNoSuffix <- function(lNumeric, rNumeric, lhyphenNumeric, rhyphenNumeric) {
+hyphenNoSuffix <- cmpfun(function(lNumeric, rNumeric, lhyphenNumeric, rhyphenNumeric) {
     houseNumSeq <- seq(lNumeric, rNumeric, 2);
 
     # convert numbers to strings for non-hyphenated housenums
@@ -24,9 +80,9 @@ hyphenNoSuffix <- function(lNumeric, rNumeric, lhyphenNumeric, rhyphenNumeric) {
 
     combined <- paste(c(hyphenated, noHyphens), collapse=',')
     return(combined);
-}
+})
 
-hyphenSuffix <- function(lowNumeric, highNumeric, lowSuffix, highSuffix, lhyphenNumeric) {
+hyphenSuffix <- cmpfun(function(lowNumeric, highNumeric, lowSuffix, highSuffix, lhyphenNumeric) {
   houseNumSeq <- seq(lowNumeric, highNumeric, 2);
   
   noHyphens = paste(houseNumSeq);
@@ -37,7 +93,7 @@ hyphenSuffix <- function(lowNumeric, highNumeric, lowSuffix, highSuffix, lhyphen
     '-',
     str_sub(houseNumSeq, nchar(parse_character(lhyphenNumeric)) + 1, -1),
     sep = ""
-  );
+  )
   
   suffices <- LETTERS[
     seq(
@@ -52,9 +108,9 @@ hyphenSuffix <- function(lowNumeric, highNumeric, lowSuffix, highSuffix, lhyphen
   combined <- paste(c(noHyphenAndSuffix, hyphenAndSuffix), collapse=',')
   
   return(combined)
-}
+})
 
-noHyphenSuffix <- function(from, to, lowSuffix, highSuffix) {
+noHyphenSuffix <- cmpfun(function(from, to, lowSuffix, highSuffix) {
   houseNumbers <- paste(seq(from, to, 2), collapse=',')
   
   suffices <- LETTERS[
@@ -66,7 +122,7 @@ noHyphenSuffix <- function(from, to, lowSuffix, highSuffix) {
   
   productOfSequences <- paste(expand.grid(a = houseNumbers, b = suffices) %>% unite(c,a,b, sep="") %>% unlist, collapse=',')
   return(productOfSequences)
-}
+})
 
 # Sample data with PAD data frame in the environment
 # padSample <- pad[sample(nrow(pad), nrow(pad) * 0.1), ]
