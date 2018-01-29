@@ -35,11 +35,6 @@ snd <- read_fwf(
   skip = 1) %>%
   select(boro, sc5, lgc, alt_st_name = stname, full_stname, primary_flag, principal_flag)
 
-# clear whitespace from alternate streetnames
-snd <- snd %>%
-  mutate(alt_st_name = str_trim(gsub("\\s+", " ", alt_st_name))) %>%
-  mutate(full_stname = str_trim(gsub("\\s+", " ", full_stname)))
-
 # Read BBL centroids data, make them distinct on the BBL key
 bblcentroids <- read_csv(
     'data/bblcentroids.csv',
@@ -65,6 +60,11 @@ suffix_lookup <- read_csv(
 )
 
 "CLEANING DATA" %>% print
+# clear whitespace from alternate streetnames
+snd <- snd %>%
+  mutate(alt_st_name = str_trim(gsub("\\s+", " ", alt_st_name))) %>%
+  mutate(full_stname = str_trim(gsub("\\s+", " ", full_stname)))
+
 # Left join BBL bill data; unite boro, block, lots, for a concatenated join keys
 pad <- padRaw %>%
   left_join(bbl, by = c('boro', 'block', 'lot')) %>%
