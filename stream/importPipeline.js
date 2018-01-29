@@ -12,7 +12,7 @@ streams.import = function(){
      .pipe( streams.docConstructor() )
      .pipe( streams.adminLookup() )
      .pipe( streams.dbMapper() )
-     .pipe( streams.elasticsearch() );
+     .pipe( streams.elasticsearch({ batchSize: 1}) );
 };
 
 module.exports = streams;
