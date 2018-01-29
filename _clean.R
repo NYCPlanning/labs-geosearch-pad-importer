@@ -11,7 +11,7 @@ pad <- padRaw %>%
   unite(bbl, boro, block, lot, sep="", remove=FALSE) %>%
   mutate(
     bbl = case_when(
-      (lot >= 1001 & lot <= 6999) ~ billbbl,
+      (lot >= 1001 & lot <= 6999 & billbbl != 'NANANA') ~ billbbl,
       TRUE                        ~ bbl
     )
   )
