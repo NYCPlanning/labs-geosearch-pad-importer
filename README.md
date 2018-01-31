@@ -4,7 +4,7 @@ R script to normalize PAD data into discrete address records.  Part of the [NYC 
 # Introduction
 The NYC Geosearch API is built on Pelias, the open source geocoding engine that powered Mapzen Search. To accomplish this, Labs uses the authoritative Property Address Directory (PAD) data from the NYC Department of City Planning's Geographic Systems Section. However, because the data represent _ranges_ of addresses, the data must be normalized into an "expanded" form that Pelias will understand. This expansion process involves many factor-specific nuances that translate the ranges into discrete address rows.
 
-<img width="1335" alt="screen shot 2018-01-18 at 2 48 09 pm" src="https://user-images.githubusercontent.com/1833820/35118079-b384f024-fc5e-11e7-9f31-83a281e42381.png">
+<img width="1335" alt="screen shot 2018-01-18 at 2 48 09 pm" src="https://user-images.githubusercontent.com/1833820/35636336-d944fb22-067e-11e8-800c-65ca2100a67b.png">
 
 
 We are treating the normalization of the PAD data as a separate data workflow from the [PAD Pelias Importer](https://github.com/NYCPlanning/labs-geosearch-pad-importer). This script starts with the published PAD file, and outputs a normalized CSV of discrete addresses, ready to be picked up by the importer.
