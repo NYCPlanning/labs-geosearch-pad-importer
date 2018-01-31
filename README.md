@@ -5,7 +5,9 @@ A Pelias Importer for Authoritative NYC Addresses. Part of the [NYC Geosearch Ge
 # Introduction
 The NYC Geosearch API is built on Pelias, the open source geocoding engine that powered Mapzen Search.
 
-<img width="1335" alt="screen shot 2018-01-18 at 2 48 09 pm" src="https://user-images.githubusercontent.com/1833820/35118079-b384f024-fc5e-11e7-9f31-83a281e42381.png">
+<img width="1335" alt="screen shot 2018-01-18 at 2 48 09 pm" src="https://user-images.githubusercontent.com/1833820/35636336-d944fb22-067e-11e8-800c-65ca2100a67b.png">
+
+
 
 We are treating the normalization of the PAD data as a separate data workflow from Pelias Import. This script picks up the output of [labs-geosearch-pad-normalize](https://github.com/NYCPlanning/labs-geosearch-pad-normalize) and imports it into the Pelias elasticsearch database.
 
