@@ -1,6 +1,6 @@
 source('_dependencies.R')
-source('_functions.R')
 source('_download_data.R')
+source('_functions.R')
 source('_load_data.R')
 source('_clean.R')
 source('_filter.R')
