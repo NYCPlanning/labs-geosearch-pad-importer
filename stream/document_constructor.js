@@ -6,8 +6,7 @@
 
 var through = require('through2');
 var Document = require('pelias-model').Document;
-
-// override Document.toESDocument so that the meta object
+// override Document.toESDocument to allow custom pad_meta fields to get shipped to ES
 Document.prototype.toESDocument = require('./to_es_document.js');
 
 var peliasLogger = require( 'pelias-logger' ).get( 'nycpad' );
@@ -17,14 +16,10 @@ module.exports = function(){
   var stream = through.obj( function( item, enc, next ) {
 
     try {
-      // if (!item.type || ! item.id) {
-      //   throw new Error('doc without valid id or type');
-      // }
-      var uniqueId = i;
+      // create new Document with source=nycpad, type=address
+      var doc = new Document( 'nycpad', 'address', i++);
 
-      // we need to assume it will be a venue and later if it turns out to be an address it will get changed
-      var doc = new Document( 'nycpad', 'address', uniqueId );
-
+      // set lat & long
       if( item.hasOwnProperty('lat') && item.hasOwnProperty('lng') ){
         doc.setCentroid({
           lat: item.lat,
@@ -32,25 +27,35 @@ module.exports = function(){
         });
       }
 
+      // set name
       doc.name = {
         default: `${item.houseNum ? item.houseNum + ' ' : ''}${item.stname}`.trim()
       };
 
+      // set phrase
       doc.phrase = {
         default: `${item.houseNum ? item.houseNum + ' ' : ''}${item.stname}`.trim()
       };
 
+      // set address parts
       doc.address_parts = {
         number: item.houseNum,
         street: item.stname,
         zip: item.zipcode
       };
 
-      doc.setMeta('bbl', item.bbl);
+      // set meta fields from PAD
+      doc.pad_meta = {
+        pad_low: item.pad_low,
+        pad_high: item.pad_high,
+        pad_bin: item.pad_bin,
+        pad_bbl: item.pad_bbl,
+        pad_geomtype: item.pad_geomtype,
+        pad_orig_stname: item.pad_orig_stname
+      };
 
       // Push instance of Document downstream
       this.push( doc );
-      i += 1;
     }
 
     catch( e ){

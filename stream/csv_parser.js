@@ -8,10 +8,10 @@ function createCombinedStream(){
   var defaultPath= require('pelias-config').generate().imports.nycpad;
 
   defaultPath.import.forEach(function( importObject){
-    var conf = {file: path.join(defaultPath.datapath, importObject.filename), leveldb: defaultPath.leveldbpath};
+    var file = path.join(defaultPath.datapath, importObject.filename);
     fullStream.append(function(next){
-      logger.info('Creating read stream for: ' + conf.file);
-      next(csv.fromPath(conf.file, {
+      logger.info('Creating read stream for: ' + file);
+      next(csv.fromPath(file, {
         headers: true,
       }));
     });

@@ -2,7 +2,7 @@ var streams = {};
 
 streams.csvParser = require('./csv_parser').create;
 streams.docConstructor = require('./document_constructor');
-streams.adminLookup = require('pelias-wof-admin-lookup').create;
+streams.addParentData = require('./adminLookup');
 streams.dbMapper = require('pelias-model').createDocumentMapperStream;
 streams.elasticsearch = require('pelias-dbclient');
 
@@ -10,7 +10,7 @@ streams.elasticsearch = require('pelias-dbclient');
 streams.import = function(){
    streams.csvParser()
      .pipe( streams.docConstructor() )
-     .pipe( streams.adminLookup() )
+     .pipe( streams.addParentData() )
      .pipe( streams.dbMapper() )
      .pipe( streams.elasticsearch({ batchSize: 1}) );
 };

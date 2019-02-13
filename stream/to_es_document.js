@@ -15,7 +15,7 @@ module.exports = function() {
     popularity: this.popularity,
     population: this.population,
     polygon: this.shape,
-    meta: this._meta
+    pad_meta: this.pad_meta
   };
 
   // remove empty properties

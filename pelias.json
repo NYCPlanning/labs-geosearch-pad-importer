@@ -4,6 +4,9 @@
       "host": "localhost"
     }]
   },
+  "schema": {
+    "indexName": "pelias"
+  },
   "imports": {
     "nycpad": {
       "download": [
@@ -16,11 +19,6 @@
       "import": [{
           "filename":"labs-geosearch-pad-normalized.csv"
       }]
-    },
-    "services": {
-      "pip": {
-        "url": "http://localhost:4200"
-      }
     }
   }
 }
