@@ -23,7 +23,7 @@
     "fast-csv": "^2.4.1",
     "fs-extra": "^5.0.0",
     "joi": "^12.0.0",
-    "lodash": "^4.17.11",
+    "lodash": "^4.17.21",
     "pelias-config": "^2.13.0",
     "pelias-dbclient": "^2.6.2",
     "pelias-logger": "^0.3.0",
