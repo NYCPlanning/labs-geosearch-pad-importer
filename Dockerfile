@@ -1,5 +1,5 @@
 # base image
-FROM pelias/baseimage
+FROM pelias/baseimage@sha256:673cc705c9be478351e3355634df395a96210fa6b78fb66d6fc0d7d6d1accb56
 
 # downloader apt dependencies
 # note: this is done in one command in order to keep down the size of intermediate containers
